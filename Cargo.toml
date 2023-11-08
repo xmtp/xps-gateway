@@ -1,0 +1,22 @@
+[package]
+name = "gateway"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tonic = "0.9"
+prost = "0.11"
+http = "0.2.9"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+async-stream = "0.2"
+clap = { version = "4.3.21", features = ["derive"] }
+tonic-web = "0.9.2"
+tower-http = { version = "0.4.0", default-features = false, features = [
+    "cors",
+] }
+
+[build-dependencies]
+tonic-build = "0.9"

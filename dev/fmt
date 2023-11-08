@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eou pipefail
+
+dev/lint-markdown --fix
+cargo clippy --fix
