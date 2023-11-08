@@ -1,0 +1,23 @@
+syntax = "proto3";
+package xmtp.gateway.inbox.v1;
+
+service Inbox {
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc GetMessages(GetMessagesRequest) returns (stream Envelope);
+}
+
+message Envelope {
+  string inbox = 1;
+  bytes message = 2;
+}
+
+message SendMessageRequest { repeated Envelope envelopes = 1; }
+
+message SendMessageResponse { string transaction_id = 1; }
+
+message GetMessagesRequest {
+  string inbox = 1;
+  bool follow = 2;
+  uint64 start_at = 3;
+  uint64 end_at = 4;
+}
