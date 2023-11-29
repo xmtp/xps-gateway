@@ -1,5 +1,7 @@
 # XMTP Postal Service Node
 
+[![Test](https://github.com/xmtp/postal_service/actions/workflows/ci-image.yml/badge.svg)](https://github.com/xmtp/postal_service/actions/workflows/ci-image.yml)
+
 This postal service supports the XMTP inbox backed by a decentralized network.
 
 ## Quick Start (Dev Containers)
