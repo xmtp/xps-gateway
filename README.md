@@ -1,4 +1,4 @@
-# XMTP Postal Service Node
+# XMTP Postal Service
 
 [![Test](https://github.com/xmtp/postal_service/actions/workflows/ci-image.yml/badge.svg)](https://github.com/xmtp/postal_service/actions/workflows/ci-image.yml)
 

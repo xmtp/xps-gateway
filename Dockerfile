@@ -1,7 +1,8 @@
 FROM ghcr.io/xmtp/rust:latest
 USER xmtp
 
-WORKDIR /workspaces/postal_service
+ARG PROJECT=xps-gateway
+WORKDIR /workspaces/${PROJECT}
 COPY --chown=xmtp:xmtp . .
 
 ENV PATH=~xmtp/.cargo/bin:$PATH
