@@ -1,7 +1,7 @@
 [workspace]
 
 members = [
-"xps"
+"xps-gateway"
 ]
 
 exclude = [ ]
