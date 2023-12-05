@@ -1,22 +1,11 @@
-[package]
-name = "gateway"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+members = [
+"xps-gateway"
+]
 
-[dependencies]
-tonic = "0.9"
-prost = "0.11"
-http = "0.2.9"
-tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
-tokio-stream = { version = "0.1", features = ["net"] }
-async-stream = "0.2"
-clap = { version = "4.3.21", features = ["derive"] }
-tonic-web = "0.9.2"
-tower-http = { version = "0.4.0", default-features = false, features = [
-    "cors",
-] }
+exclude = [ ]
 
-[build-dependencies]
-tonic-build = "0.9"
+# Make the feature resolver explicit.
+# See https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details
+resolver = "2"

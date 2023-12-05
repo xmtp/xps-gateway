@@ -15,5 +15,5 @@ or
 Command line build using docker
 
 ```bash
-$ docker build . -t xmtp_postal_service:1
+docker build . -t xmtp_postal_service:1
 ```
