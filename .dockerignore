@@ -1,4 +1,3 @@
-**/target/**
-**/node_modules
-**/.build/**
-**/build/**
+/target
+_site
+.DS_Store
