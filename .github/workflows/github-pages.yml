@@ -37,6 +37,9 @@ jobs:
           profile: minimal
           override: true
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2          
+
       - name: Run tests
         run: |
           cargo test
