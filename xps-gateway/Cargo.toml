@@ -17,3 +17,4 @@ async-trait = "0.1"
 jsonrpsee = { version = "0.21", features = ["macros", "server", "client-core"] }
 anyhow = "1"
 thiserror = "1"
+ctor = "0.2"
