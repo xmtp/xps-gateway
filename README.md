@@ -7,6 +7,7 @@ This *postal service* gateway implements the XMTP transport for registration, in
 ## Quick Start (Development)
 
 - [READ THE DOCS](https://xmtp.github.io/xps-gateway)
+- [CONTRIBUTING](CONTRIBUTING.md)
 
 ### Dev Containers Development
 
