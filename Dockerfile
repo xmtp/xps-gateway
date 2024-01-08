@@ -1,6 +1,8 @@
 FROM ghcr.io/xmtp/rust:latest
 USER xmtp
 
+RUN sudo apt update && sudo apt install -y pkg-config openssl libssl-dev
+
 ARG PROJECT=xps-gateway
 WORKDIR /workspaces/${PROJECT}
 COPY --chown=xmtp:xmtp . .
