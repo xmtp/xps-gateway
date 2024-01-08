@@ -11,7 +11,7 @@ This *postal service* gateway implements the XMTP transport for registration, in
 
 ### Dev Containers Development
 
-This contract supports containerized development. From Visual Studio Code Dev Containers extension
+This project supports containerized development. From Visual Studio Code Dev Containers extension
 
 `Reopen in Container`
 
@@ -20,7 +20,7 @@ or
 Command line build using docker
 
 ```bash
-$ docker build . -t xps-contract:1
+$ docker build . -t xps-gateway:1
 ```
 
 ## Testing (command line)
