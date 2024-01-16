@@ -10,4 +10,7 @@ pub trait Xps {
     // Placeholder for send_message, see [the discussion](https://github.com/xmtp/xps-gateway/discussions/11)
     #[method(name = "sendMessage")]
     async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned>;
+
+    #[method(name = "status")]
+    async fn status(&self) -> Result<String, ErrorObjectOwned>;
 }
