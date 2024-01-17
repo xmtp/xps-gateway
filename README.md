@@ -28,3 +28,4 @@ $ docker build . -t xps-gateway:1
 ```bash
 $ cargo test
 ```
+
