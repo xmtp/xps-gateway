@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+// The types defined here are paret of the model for RPC calls. These are different from the underlying crates implementation data structure.
+// underlying types, for instance, won't be serialized.
+
 /// A message sent to a conversation
 #[derive(Serialize, Deserialize)]
 pub struct Message {
@@ -20,13 +23,13 @@ pub struct Message {
 pub struct Signature {
     /// Signature of V
     #[serde(rename = "V")]
-    v: i64,
+    pub v: i64,
     /// Signature of R
     #[serde(rename = "R")]
-    r: Vec<u8>,
+    pub r: Vec<u8>,
     /// Signature of S
     #[serde(rename = "S")]
-    s: Vec<u8>,
+    pub s: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
