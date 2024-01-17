@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Message {
     // Unique identifier for a conversation
-    #[serde(rename = "groupId")]
-    group_id: Vec<u8>,
+    #[serde(rename = "conversationId")]
+    pub conversation_id: Vec<u8>,
     /// message content in bytes
-    payload: Vec<u8>,
+    pub payload: Vec<u8>,
     /// Signature of V
-    v: Vec<u8>,
+    pub v: Vec<u8>,
     /// Signature of R
-    r: Vec<u8>,
+    pub r: Vec<u8>,
     /// Signature of S
-    s: Vec<u8>,
+    pub s: Vec<u8>,
 }
