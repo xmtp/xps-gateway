@@ -30,17 +30,17 @@ impl XpsServer for XpsMethods {
     ) -> Result<GrantInstallationResult, ErrorObjectOwned> {
         // perform data validation on the request parameters.
         if name.len() > 32 {
-            return Err(ErrorObject::borrowed(
+            return Err(ErrorObjectOwned::owned(
                 -31001,
                 "name field was longer than 32 bytes",
-                None,
+                None::<()>,
             ));
         };
         if value.len() > 4096 {
-            return Err(ErrorObject::borrowed(
+            return Err(ErrorObjectOwned::owned(
                 -31002,
                 "value field was longer than 4096 bytes",
-                None,
+                None::<()>,
             ));
         }
 
