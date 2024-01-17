@@ -1,3 +1,8 @@
+pub mod registry;
+pub mod types;
+
+pub struct XpsRegistry;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
