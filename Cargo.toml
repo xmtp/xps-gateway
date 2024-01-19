@@ -1,10 +1,11 @@
 [workspace]
 
 members = [
-"xps-gateway",
-"messaging",
-"inbox",
-"registry",
+  "xps-gateway",
+  "messaging",
+  "inbox",
+  "registry", 
+  "gateway-types",
 ]
 
 exclude = [ ]
@@ -12,3 +13,19 @@ exclude = [ ]
 # Make the feature resolver explicit.
 # See https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details
 resolver = "2"
+
+[workspace.dependencies]
+log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter"] }
+serde = "1"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+async-trait = "0.1"
+jsonrpsee = { version = "0.21", features = ["macros", "server", "client-core"] }
+anyhow = "1.0"
+thiserror = "1.0"
+ethers = { version = "2", features = ["abigen"] }
+ctor = "0.2"
+lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "insipx/revoke-installation", package = "lib-didethresolver" }
+gateway-types = { path = "./gateway-types" }
+rustc-hex = "2.1"
