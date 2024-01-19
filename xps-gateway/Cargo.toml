@@ -23,8 +23,11 @@ gateway-types.workspace = true
 rand = "0.8"
 tokio-stream = { version = "0.1", features = ["net"] }
 registry = { path = "../registry" }
+hex.workspace = true
 
 [dev-dependencies]
-jsonrpsee = { workspacve = true, features = ["macros", "server", "client"]}
+jsonrpsee = { workspace = true, features = ["macros", "server", "client"]}
 tokio = { workspace = true, features = ["macros", "rt", "time"]}
 futures = "0.3"
+serde_json.workspace = true
+

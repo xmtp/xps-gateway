@@ -18,7 +18,8 @@ resolver = "2"
 log = "0.4"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter"] }
-serde = "1"
+serde = "1.0"
+serde_json = "1.0"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 async-trait = "0.1"
 jsonrpsee = { version = "0.21", features = ["macros", "server", "client-core"] }
@@ -29,3 +30,4 @@ ctor = "0.2"
 lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "insipx/revoke-installation", package = "lib-didethresolver" }
 gateway-types = { path = "./gateway-types" }
 rustc-hex = "2.1"
+hex = "0.4"

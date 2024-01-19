@@ -1976,7 +1976,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "lib-didethresolver"
 version = "0.1.0"
-source = "git+https://github.com/xmtp/didethresolver?branch=insipx/revoke-installation#c6fce586b1478d5b6c42a89fc110034ca9190d47"
+source = "git+https://github.com/xmtp/didethresolver?branch=insipx/revoke-installation#616e28cdb9e50153945ef3cac842ba7109d5a135"
 dependencies = [
  "async-trait",
  "base64 0.21.7",
@@ -4331,12 +4331,14 @@ dependencies = [
  "ethers",
  "futures",
  "gateway-types",
+ "hex",
  "jsonrpsee",
  "lib-didethresolver",
  "log",
  "rand",
  "registry",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "tokio-stream",

@@ -2,8 +2,8 @@
 
 use std::str::FromStr;
 
-use ethers::{providers::Middleware, types::Address};
-use gateway_types::{Signature, XmtpAttributeType};
+use ethers::{core::types::Signature, providers::Middleware, types::Address};
+use gateway_types::XmtpAttributeType;
 use lib_didethresolver::{did_registry::DIDRegistry, types::Attribute};
 
 use crate::error::ContactOperationError;
@@ -30,13 +30,14 @@ where
     ) -> Result<(), ContactOperationError<M>> {
         // for now, we will just assume the DID is a valid ethereum wallet address
         // TODO: Parse or resolve the actual DID
+        // TODO: Remove unwraps
         let address = Address::from_str(&did)?;
         self.registry
             .revoke_attribute_signed(
                 address,
-                signature.v,
-                signature.r,
-                signature.s,
+                signature.v.try_into().unwrap(),
+                signature.r.try_into().unwrap(),
+                signature.s.try_into().unwrap(),
                 Attribute::from(name).into(),
                 value.into(),
             )

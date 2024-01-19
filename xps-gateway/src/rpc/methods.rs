@@ -6,11 +6,11 @@ use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
-use ethers::providers::Middleware;
+use ethers::{core::types::Signature, providers::Middleware};
 use jsonrpsee::types::ErrorObjectOwned;
 use thiserror::Error;
 
-use gateway_types::{Message, Signature, XmtpAttributeType};
+use gateway_types::{Message, XmtpAttributeType};
 use registry::{error::ContactOperationError, ContactOperations};
 
 /// Gateway Methods for XPS
@@ -23,19 +23,6 @@ impl XpsMethods {
         Self {
             contact_operations: ContactOperations::new(context.registry.clone()),
         }
-    }
-}
-
-impl XpsMethods {
-    /// Create a new instance of the XpsMethods struct
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Default for XpsMethods {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
