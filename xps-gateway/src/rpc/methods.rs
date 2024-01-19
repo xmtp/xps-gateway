@@ -3,7 +3,7 @@
 use super::api::*;
 
 use async_trait::async_trait;
-use jsonrpsee::types::{ErrorObject, ErrorObjectOwned};
+use jsonrpsee::types::ErrorObjectOwned;
 
 use crate::types::{GrantInstallationResult, Message, Signature};
 use registry::XpsRegistry;
