@@ -12,7 +12,7 @@ ENV USER=xmtp
 
 RUN ~xmtp/.cargo/bin/cargo check
 RUN ~xmtp/.cargo/bin/cargo fmt --check
-RUN ~xmtp/.cargo/bin/cargo clippy --all-features --no-deps
+RUN ~xmtp/.cargo/bin/cargo clippy --all-features --no-deps -- -D warnings
 RUN ~xmtp/.cargo/bin/cargo test
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
