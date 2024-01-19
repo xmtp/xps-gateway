@@ -98,4 +98,7 @@ pub trait Xps {
     /// - The system should have proper error handling to deal with invalid requests, unauthorized access, and other potential issues.
     #[method(name = "status")]
     async fn status(&self) -> Result<String, ErrorObjectOwned>;
+
+    #[method(name = "walletAddress")]
+    async fn wallet_address(&self) -> Result<String, ErrorObjectOwned>;
 }
