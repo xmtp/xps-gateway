@@ -37,9 +37,6 @@ jobs:
           profile: minimal
           override: true
 
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v2          
-
       - name: Run tests
         run: |
           cargo test
@@ -48,10 +45,11 @@ jobs:
       - name: Invoke cargo doc
         run: |
           rm -rf ./_site
-          cargo doc --lib --no-deps
+          cargo doc --workspace --no-deps
           rm -f target/doc/.lock
           cp -r target/doc _site
-          echo "<meta http-equiv=\"refresh\" content=\"0; url=registry\">" > _site/index.html
+          echo "generating site index"
+          python3 .github/site/siteindex.py xps_gateway registry messaging inbox > _site/index.html
           echo "Taking care of pedantic permissions requirements required by GitHub Pages"
           chmod -R +rX _site
         id: docgen

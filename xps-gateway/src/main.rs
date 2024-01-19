@@ -1,5 +1,5 @@
 use anyhow::Result;
-use gateway::run;
+use xps_gateway::run;
 
 #[tokio::main]
 async fn main() -> Result<()> {
