@@ -38,6 +38,8 @@ jobs:
           override: true
 
       - name: Run tests
+        env:
+          CARGO_INCREMENTAL: 0  
         run: |
           cargo test
         id: test
