@@ -25,11 +25,10 @@ jobs:
 
       - name: Build and Push
         uses: docker/build-push-action@v3
-        env:
-          CARGO_INCREMENTAL: 0  
         with:
           context: .
           platforms: linux/amd64
           push: false
           build-args: |
             VERSION=latest
+            CARGO_INCREMENTAL=0

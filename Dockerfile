@@ -1,4 +1,6 @@
 FROM ghcr.io/xmtp/rust:latest
+ARG CARGO_INCREMENTAL
+
 USER xmtp
 
 RUN sudo apt update && sudo apt install -y pkg-config openssl libssl-dev
@@ -10,6 +12,7 @@ COPY --chown=xmtp:xmtp . .
 ENV PATH=~xmtp/.cargo/bin:$PATH
 ENV USER=xmtp
 
+ENV CARGO_INCREMENTAL=${CARGO_INCREMENTAL:-1}
 RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps -- -D warnings
