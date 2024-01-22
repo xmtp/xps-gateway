@@ -28,7 +28,7 @@ const TEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[cfg(test)]
 mod it {
-    use ethers::{abi::Bytes, types::U256};
+    use ethers::types::U256;
     use gateway_types::{Message, XmtpAttributeType};
 
     use super::*;
@@ -67,11 +67,18 @@ mod it {
             let name = *b"did/pub/xmtp/ed25519/inst/hex   ";
             let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
             let validity = U256::from(604_800);
-            let tx = context
-                .registry
-                .set_attribute(me, name, value.into(), validity)
-                .tx;
-            let signature = context.signer.sign_transaction(&tx, me).await.unwrap();
+
+            let signature = context
+                .signer
+                .signer()
+                .sign_attribute(
+                    context.signer.signer().clone(),
+                    name,
+                    value.to_vec(),
+                    validity,
+                )
+                .await?;
+
             let attr = context.registry.set_attribute_signed(
                 me,
                 signature.v.try_into().unwrap(),
