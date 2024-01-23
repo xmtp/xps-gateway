@@ -5,7 +5,6 @@ use jsonrpsee::{
 };
 
 use ethers::{
-    abi::AbiDecode,
     abi::Address,
     core::{types::TransactionRequest, utils::Anvil},
     middleware::Middleware,
@@ -17,6 +16,7 @@ use ethers::{
 use futures::future::FutureExt;
 use lib_didethresolver::{
     did_registry::{DIDRegistry, RegistrySignerExt},
+    types::DidUrl,
     Resolver,
 };
 use std::{
@@ -74,44 +74,41 @@ mod it {
         with_xps_client(None, |client, context, resolver, anvil| async move {
             let wallet: LocalWallet = anvil.keys()[3].clone().into();
             let me = get_user(&anvil, 3).await;
-            let name = *b"did/pub/ed25519/veriKey/hex     ";
+            let name = *b"did/pub/Ed25519/xmtp/inst/hex   ";
             let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
             let validity = U256::from(604_800);
             let signature = wallet
                 .sign_attribute(&context.registry, name, value.to_vec(), validity)
                 .await?;
 
-            log::debug!("Me: {}", hex::encode(me.address()));
-            log::debug!("Wallet {}", hex::encode(wallet.address()));
-            log::debug!("Registry: {}", hex::encode(context.registry.address()));
-            log::debug!("Signer: {}", hex::encode(context.signer.address()));
             let attr = context.registry.set_attribute_signed(
                 me.address(),
                 signature.v.try_into().unwrap(),
-                signature.r.try_into().unwrap(),
-                signature.s.try_into().unwrap(),
+                signature.r.into(),
+                signature.s.into(),
                 name,
                 value.into(),
                 validity,
             );
-            let res = attr.send().await;
-            if let Err(e) = res {
-                let rev = e.decode_revert::<String>();
-                // let rev_bytes = e.as_revert().map(|b| hex::encode(b)).unwrap();
-                // let rev = BadSignature::decode_hex(rev_bytes);
-                println!("{:?}", rev);
-            } else {
-                println!("IT WORKED???");
-            }
+            attr.send().await?.await?;
 
             let doc = resolver
                 .resolve_did(me.address(), None)
                 .await
                 .unwrap()
                 .document;
+            assert_eq!(
+                doc.verification_method[1].id,
+                DidUrl::parse(format!(
+                    "did:ethr:0x{}/xmtp?meta=installation_key#delegate-0",
+                    hex::encode(me.address())
+                ))
+                .unwrap()
+            );
 
-            log::debug!("{}", serde_json::to_string_pretty(&doc).unwrap());
-            /*
+            let signature = wallet
+                .sign_revoke_attribute(&context.registry, name, value.to_vec())
+                .await?;
             client
                 .revoke_installation(
                     format!("0x{}", hex::encode(me.address())),
@@ -126,8 +123,19 @@ mod it {
                 .await
                 .unwrap()
                 .document;
+
             log::debug!("{}", serde_json::to_string_pretty(&doc).unwrap());
-            */
+
+            assert_eq!(
+                doc.verification_method[0].id,
+                DidUrl::parse(format!(
+                    "did:ethr:0x{}#controller",
+                    hex::encode(me.address())
+                ))
+                .unwrap()
+            );
+            assert_eq!(doc.verification_method.len(), 1);
+
             Ok(())
         })
         .await

@@ -1,3 +1,7 @@
+//! Error variants for Registry
+
+use std::num::TryFromIntError;
+
 use ethers::{
     contract::ContractError,
     providers::{Middleware, ProviderError},
@@ -12,4 +16,6 @@ pub enum ContactOperationError<M: Middleware> {
     ContractError(#[from] ContractError<M>),
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
+    #[error("Error converting from int: {0}")]
+    IntConversion(#[from] TryFromIntError),
 }

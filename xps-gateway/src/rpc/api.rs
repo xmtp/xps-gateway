@@ -12,13 +12,105 @@ pub trait Xps {
     #[method(name = "sendMessage")]
     async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned>;
 
+    /// # Documentation for JSON RPC Endpoint: `revoke_installation`
+    ///
+    /// ## JSON RPC Endpoint Specification
+    ///
+    /// #### Request:
+    ///
+    /// - **Method:** `POST`
+    /// - **URL:** `/rpc/v1/revokeInstallation`
+    /// - **Headers:**
+    ///   - `Content-Type: application/json`
+    /// - **Body:**
+    ///   - **JSON Object:**
+    ///     - `jsonrpc`: `"2.0"`
+    ///     - `method`: `"revokeInstallation"`
+    ///     - `params`: Array (optional parameters as required)
+    ///     - `id`: Request identifier (integer or string)
+    ///
+    /// ### Endpoint: `revokeInstallation`
+    ///
+    /// #### Description
+    /// The `revokeInstallation` endpoint is responsible for removing the contact bundle for the XMTP device installation.   The request must be made to a valid did with an XMTP profile.
+    ///
+    /// #### Request
+    /// The request for this endpoint should contain the necessary information to authenticate and validate the installation request including the wallet signed payload
+    ///
+    /// ##### Parameters:
+    /// - `DID` (string): Unique XMTP identifier for the user requesting the revocation.
+    /// - `name` (string): Unique identifier naming bundled contents variant.
+    /// - `value` (bytes): Installation bundle bytes payload
+    /// - `V` (int): signature V
+    /// - `R` (bytes): signature R
+    /// - `S` (bytes): signature S
+    ///
+    /// ##### Example Request:
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "method": "revokeInstallation",
+    ///   "params": {
+    ///     "did": "12345",
+    ///     "name": "xmtp/contact_installation",
+    ///     "value": "#######",
+    ///     "signature": {
+    ///       "V": "12345",
+    ///       "R": "valueR",
+    ///       "S": "valueS"
+    ///     }
+    ///   },
+    ///   "id": 1
+    /// }
+    /// ```
+    ///
+    /// #### Response
+    /// The response will indicate whether the installation is revoked and may include additional information or instructions.
+    ///
+    /// ##### Result Fields:
+    /// - `status` (string): The status of the request, e.g., 'completed'.
+    /// - `message` (string, optional): Additional information or reason for the decision.
+    /// - `tx` (string, optional): transaction receipt
+    ///
+    /// ##### Example Response:
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "result": {
+    ///     "status": "completed",
+    ///     "message": "Installation revoked.",
+    ///     "tx": "<receipt>"
+    ///   },
+    ///   "id": 1
+    /// }
+    /// ```
+    ///
+    /// #### Error Handling
+    /// In case of an error, the response will include an error object with details.
+    ///
+    /// ##### Error Object Fields:
+    /// - `code` (integer): Numeric code representing the error type.
+    /// - `message` (string): Description of the error.
+    ///
+    /// ##### Example Error Response:
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "error": {
+    ///     "code": 403,
+    ///     "message": "User not authorized for installation."
+    ///   },
+    ///   "id": 1
+    /// }
+    /// ```
+
     /// removes the contact bundle for the XMTP device installation. Request must be made to a
     /// valid DID with an XMTP profile.
     ///
     /// # Arguments
     ///
     /// * `did` - the DID of the XMTP device installation
-    /// * `name` - the name of the contact bundle
+    /// * `name` - the name of the contact bundle variant
     /// * `value` - the value of the contact bundle
     /// * `signature` - the signature of the contact bundle
     #[method(name = "revokeInstallation")]
@@ -29,6 +121,7 @@ pub trait Xps {
         value: Vec<u8>,
         signature: Signature,
     ) -> Result<(), ErrorObjectOwned>;
+
     /// # Documentation for JSON RPC Endpoint: `status`
 
     /// ## Overview
