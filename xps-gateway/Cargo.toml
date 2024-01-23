@@ -20,6 +20,8 @@ thiserror = "1"
 ctor = "0.2"
 dotenvy = "0.15.7"
 envy = "0.4.2"
+ethers = "2.0.11"
+rand = "0.8.5"
 
 [dev-dependencies]
 jsonrpsee = { version = "0.21", features = ["macros", "server", "client"] }

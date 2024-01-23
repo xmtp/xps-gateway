@@ -3,6 +3,7 @@
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
 use crate::types::Message;
+use ethers::prelude::*;
 
 /// XPS JSON-RPC Interface Methods
 #[rpc(server, client, namespace = "xps")]
@@ -100,5 +101,5 @@ pub trait Xps {
     async fn status(&self) -> Result<String, ErrorObjectOwned>;
 
     #[method(name = "walletAddress")]
-    async fn wallet_address(&self) -> Result<String, ErrorObjectOwned>;
+    async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned>;
 }

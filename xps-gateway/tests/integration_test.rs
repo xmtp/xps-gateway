@@ -11,10 +11,11 @@ use tokio::time::timeout as timeout_tokio;
 use xps_gateway::{rpc::XpsClient, types::Message, XpsMethods, XpsServer, SERVER_HOST};
 
 const TEST_TIMEOUT: Duration = Duration::from_secs(10);
-const TEST_WALLET_ADDRESS: &str = "0x000000000000000000000000000000000000dEaD";
 
 #[cfg(test)]
 mod it {
+    use ethers::abi::Address;
+
     use super::*;
 
     #[tokio::test]
@@ -48,7 +49,7 @@ mod it {
     async fn test_wallet_address() -> Result<(), Error> {
         with_xps_client(None, |client| async move {
             let result = client.wallet_address().await?;
-            assert_eq!(result, TEST_WALLET_ADDRESS);
+            assert_ne!(result, Address::zero());
             Ok(())
         })
         .await
@@ -62,7 +63,7 @@ where
 {
     let server = Server::builder().build(SERVER_HOST).await.unwrap();
     let addr = server.local_addr().unwrap();
-    let handle = server.start(XpsMethods::new(TEST_WALLET_ADDRESS).into_rpc());
+    let handle = server.start(XpsMethods::new().into_rpc());
     let client = WsClientBuilder::default()
         .build(&format!("ws://{addr}"))
         .await
