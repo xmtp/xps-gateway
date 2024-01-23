@@ -32,13 +32,15 @@ where
         // TODO: Parse or resolve the actual DID
         // TODO: Remove unwraps
         let address = Address::from_str(&did)?;
+        let attribute = Attribute::from(name);
+        log::debug!("Revoking attribute {:#?}", attribute);
         self.registry
             .revoke_attribute_signed(
                 address,
                 signature.v.try_into().unwrap(),
                 signature.r.try_into().unwrap(),
                 signature.s.try_into().unwrap(),
-                Attribute::from(name).into(),
+                attribute.into(),
                 value.into(),
             )
             .send()

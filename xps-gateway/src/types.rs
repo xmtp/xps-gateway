@@ -1,4 +1,4 @@
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
 use anyhow::Error;
 use ethers::{
@@ -7,7 +7,6 @@ use ethers::{
     signers::LocalWallet,
     types::Address,
 };
-use gateway_types::DID_ETH_REGISTRY;
 use lib_didethresolver::did_registry::DIDRegistry;
 use rand::{rngs::StdRng, SeedableRng};
 
@@ -19,8 +18,10 @@ pub struct GatewayContext {
 }
 
 impl GatewayContext {
-    pub async fn new<Endpoint: AsRef<str>>(provider_endpoint: Endpoint) -> Result<Self, Error> {
-        let registry = Address::from_str(DID_ETH_REGISTRY)?;
+    pub async fn new<Endpoint: AsRef<str>>(
+        registry: Address,
+        provider_endpoint: Endpoint,
+    ) -> Result<Self, Error> {
         let wallet = LocalWallet::new(&mut StdRng::from_entropy());
         let provider = Provider::<Ws>::connect(provider_endpoint).await?;
         let signer =

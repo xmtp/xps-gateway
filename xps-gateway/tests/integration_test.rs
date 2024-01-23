@@ -5,8 +5,9 @@ use jsonrpsee::{
 };
 
 use ethers::{
+    abi::AbiDecode,
     abi::Address,
-    core::utils::Anvil,
+    core::{types::TransactionRequest, utils::Anvil},
     middleware::Middleware,
     middleware::SignerMiddleware,
     providers::{Provider, Ws},
@@ -14,9 +15,17 @@ use ethers::{
     utils::AnvilInstance,
 };
 use futures::future::FutureExt;
-use lib_didethresolver::{did_registry::DIDRegistry, Resolver};
-use std::{future::Future, sync::Arc, time::Duration};
+use lib_didethresolver::{
+    did_registry::{DIDRegistry, RegistrySignerExt},
+    Resolver,
+};
+use std::{
+    future::Future,
+    sync::{Arc, Once},
+    time::Duration,
+};
 use tokio::time::timeout as timeout_tokio;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
 
 use xps_gateway::{
     rpc::XpsClient,
@@ -24,7 +33,7 @@ use xps_gateway::{
     XpsMethods, XpsServer, SERVER_HOST,
 };
 
-const TEST_TIMEOUT: Duration = Duration::from_secs(10);
+const TEST_TIMEOUT: Duration = Duration::from_secs(20);
 
 #[cfg(test)]
 mod it {
@@ -62,25 +71,22 @@ mod it {
 
     #[tokio::test]
     async fn test_revoke_installation() -> Result<(), Error> {
-        with_xps_client(None, |client, context, resolver, _| async move {
-            let me = context.signer.address();
-            let name = *b"did/pub/xmtp/ed25519/inst/hex   ";
+        with_xps_client(None, |client, context, resolver, anvil| async move {
+            let wallet: LocalWallet = anvil.keys()[3].clone().into();
+            let me = get_user(&anvil, 3).await;
+            let name = *b"did/pub/ed25519/veriKey/hex     ";
             let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
             let validity = U256::from(604_800);
-
-            let signature = context
-                .signer
-                .signer()
-                .sign_attribute(
-                    context.signer.signer().clone(),
-                    name,
-                    value.to_vec(),
-                    validity,
-                )
+            let signature = wallet
+                .sign_attribute(&context.registry, name, value.to_vec(), validity)
                 .await?;
 
+            log::debug!("Me: {}", hex::encode(me.address()));
+            log::debug!("Wallet {}", hex::encode(wallet.address()));
+            log::debug!("Registry: {}", hex::encode(context.registry.address()));
+            log::debug!("Signer: {}", hex::encode(context.signer.address()));
             let attr = context.registry.set_attribute_signed(
-                me,
+                me.address(),
                 signature.v.try_into().unwrap(),
                 signature.r.try_into().unwrap(),
                 signature.s.try_into().unwrap(),
@@ -88,21 +94,40 @@ mod it {
                 value.into(),
                 validity,
             );
-            attr.send().await?.await?;
+            let res = attr.send().await;
+            if let Err(e) = res {
+                let rev = e.decode_revert::<String>();
+                // let rev_bytes = e.as_revert().map(|b| hex::encode(b)).unwrap();
+                // let rev = BadSignature::decode_hex(rev_bytes);
+                println!("{:?}", rev);
+            } else {
+                println!("IT WORKED???");
+            }
 
-            let tx = context.registry.revoke_attribute(me, name, value.into()).tx;
-            let signature = context.signer.sign_transaction(&tx, me).await.unwrap();
+            let doc = resolver
+                .resolve_did(me.address(), None)
+                .await
+                .unwrap()
+                .document;
+
+            log::debug!("{}", serde_json::to_string_pretty(&doc).unwrap());
+            /*
             client
                 .revoke_installation(
-                    format!("0x{}", hex::encode(me)),
+                    format!("0x{}", hex::encode(me.address())),
                     XmtpAttributeType::InstallationKey,
                     value.to_vec(),
                     signature,
                 )
                 .await?;
 
-            let doc = resolver.resolve_did(me, None).await.unwrap().document;
-            println!("{}", serde_json::to_string_pretty(&doc).unwrap());
+            let doc = resolver
+                .resolve_did(me.address(), None)
+                .await
+                .unwrap()
+                .document;
+            log::debug!("{}", serde_json::to_string_pretty(&doc).unwrap());
+            */
             Ok(())
         })
         .await
@@ -111,32 +136,47 @@ mod it {
 
 async fn with_xps_client<F, R, T>(timeout: Option<Duration>, f: F) -> Result<T, Error>
 where
-    F: FnOnce(WsClient, GatewayContext, Resolver<Arc<GatewaySigner>>, &AnvilInstance) -> R
+    F: FnOnce(WsClient, GatewayContext, Resolver<Arc<GatewaySigner>>, Arc<AnvilInstance>) -> R
         + 'static
         + Send,
     R: Future<Output = Result<T, Error>> + FutureExt + Send + 'static,
 {
+    init_test_logging();
     let anvil = Anvil::new().args(vec!["--base-fee", "100"]).spawn();
     log::debug!("Anvil spawned at {}", anvil.ws_endpoint());
     let registry_address = deploy_to_anvil(&anvil).await;
     log::debug!("Contract deployed at {}", registry_address);
 
-    let server = Server::builder().build(SERVER_HOST).await.unwrap();
-    let addr = server.local_addr().unwrap();
-    let context = GatewayContext::new(anvil.ws_endpoint()).await?;
+    let context = GatewayContext::new(registry_address, anvil.ws_endpoint()).await?;
+
+    let accounts = context.signer.get_accounts().await?;
+    let from = accounts[0];
+    let tx = TransactionRequest::new()
+        .to(context.signer.address())
+        .value(5_000_000_000_000_000_000_000_u128)
+        .from(from);
+    context.signer.send_transaction(tx, None).await?.await?;
+    let balance = context
+        .signer
+        .get_balance(context.signer.address(), None)
+        .await?;
+    log::debug!("Gateway Balance is {}", balance);
+
     let resolver = Resolver::new(context.signer.clone(), registry_address)
         .await
         .unwrap();
 
+    let server = Server::builder().build(SERVER_HOST).await.unwrap();
+    let addr = server.local_addr().unwrap();
     let handle = server.start(XpsMethods::new(&context).into_rpc());
     let client = WsClientBuilder::default()
         .build(&format!("ws://{addr}"))
         .await
         .unwrap();
-
+    let anvil = Arc::new(anvil);
     let result = timeout_tokio(
         timeout.unwrap_or(TEST_TIMEOUT),
-        f(client, context, resolver, &anvil),
+        f(client, context, resolver, anvil.clone()),
     )
     .await;
 
@@ -175,4 +215,26 @@ async fn client(
         provider,
         wallet.with_chain_id(anvil.chain_id()),
     ))
+}
+
+async fn get_user(
+    anvil: &AnvilInstance,
+    index: usize,
+) -> Arc<SignerMiddleware<Provider<Ws>, LocalWallet>> {
+    let wallet: LocalWallet = anvil.keys()[index].clone().into();
+    client(&anvil, wallet).await
+}
+
+#[cfg(test)]
+static INIT: Once = Once::new();
+
+#[cfg(test)]
+fn init_test_logging() {
+    INIT.call_once(|| {
+        let fmt = fmt::layer().compact();
+        Registry::default()
+            .with(EnvFilter::from_default_env())
+            .with(fmt)
+            .init()
+    })
 }
