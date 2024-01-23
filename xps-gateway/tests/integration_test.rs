@@ -8,9 +8,10 @@ use futures::future::FutureExt;
 use std::{future::Future, time::Duration};
 use tokio::time::timeout as timeout_tokio;
 
-use xps_gateway::{rpc::XpsClient, types::Message, XpsMethods, XpsServer, SERVER_HOST};
+use xps_gateway::{rpc::XpsClient, types::Message, XpsMethods, XpsServer};
 
 const TEST_TIMEOUT: Duration = Duration::from_secs(10);
+pub const SERVER_HOST: &str = "127.0.0.1";
 
 #[cfg(test)]
 mod it {
@@ -49,7 +50,8 @@ where
     F: FnOnce(WsClient) -> R + 'static + Send,
     R: Future<Output = Result<T, Error>> + FutureExt + Send + 'static,
 {
-    let server = Server::builder().build(SERVER_HOST).await.unwrap();
+    let server_addr = format!("{}:{}", SERVER_HOST, 0);
+    let server = Server::builder().build(server_addr).await.unwrap();
     let addr = server.local_addr().unwrap();
     let handle = server.start(XpsMethods::new().into_rpc());
     let client = WsClientBuilder::default()
