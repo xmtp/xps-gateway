@@ -3,7 +3,8 @@
 use ethers::core::types::Signature;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::{Message, XmtpAttributeType};
+use gateway_types::Message;
+use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods
 #[rpc(server, client, namespace = "xps")]
@@ -117,7 +118,7 @@ pub trait Xps {
     async fn revoke_installation(
         &self,
         did: String,
-        name: XmtpAttributeType,
+        name: XmtpAttribute,
         value: Vec<u8>,
         signature: Signature,
     ) -> Result<(), ErrorObjectOwned>;

@@ -3,8 +3,11 @@
 use std::str::FromStr;
 
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
-use gateway_types::XmtpAttributeType;
-use lib_didethresolver::{did_registry::DIDRegistry, types::Attribute, Resolver};
+use lib_didethresolver::{
+    did_registry::DIDRegistry,
+    types::{Attribute, XmtpAttribute},
+    Resolver,
+};
 
 use crate::error::ContactOperationError;
 
@@ -24,7 +27,7 @@ where
     pub async fn revoke_installation(
         &self,
         did: String,
-        name: XmtpAttributeType,
+        name: XmtpAttribute,
         value: Vec<u8>,
         signature: Signature,
     ) -> Result<(), ContactOperationError<M>> {

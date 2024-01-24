@@ -8,9 +8,10 @@ use jsonrpsee::types::error::ErrorCode;
 use async_trait::async_trait;
 use ethers::{core::types::Signature, providers::Middleware};
 use jsonrpsee::types::ErrorObjectOwned;
+use lib_didethresolver::types::XmtpAttribute;
 use thiserror::Error;
 
-use gateway_types::{Message, XmtpAttributeType};
+use gateway_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
 
 /// Gateway Methods for XPS
@@ -42,7 +43,7 @@ impl XpsServer for XpsMethods {
     async fn revoke_installation(
         &self,
         did: String,
-        name: XmtpAttributeType,
+        name: XmtpAttribute,
         value: Vec<u8>,
         signature: Signature,
     ) -> Result<(), ErrorObjectOwned> {
