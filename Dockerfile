@@ -21,6 +21,8 @@ RUN cargo test --workspace --all-features
 RUN CARGO_TARGET_DIR=/workspaces/${PROJECT}/target cargo install --path xps-gateway --bin=xps_gateway --root=~${USER}/.cargo/
 RUN valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ~${USER}/.cargo/bin/xps_gateway --help
 
+CMD RUST_LOG=info cargo run -- --host 0.0.0.0 --port 8080
+
 LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name="rustdev" \
     org.label-schema.description="Rust Development Container" \
