@@ -9,7 +9,7 @@ use lib_didethresolver::{
 };
 use xps_gateway::rpc::XpsClient;
 
-use ethers::types::U256;
+use ethers::types::{Address, U256};
 use gateway_types::Message;
 
 use integration_util::*;
@@ -36,6 +36,16 @@ async fn test_fail_send_message() -> Result<(), Error> {
         };
         let result = client.send_message(message).await;
         assert!(result.is_err());
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_wallet_address() -> Result<(), Error> {
+    with_xps_client(None, |client, _, _, _| async move {
+        let result = client.wallet_address().await?;
+        assert_ne!(result, Address::zero());
         Ok(())
     })
     .await

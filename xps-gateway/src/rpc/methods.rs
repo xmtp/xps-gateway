@@ -10,6 +10,8 @@ use ethers::{core::types::Signature, providers::Middleware};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use thiserror::Error;
+use ethers::prelude::*;
+use rand::{rngs::StdRng, SeedableRng};
 
 use gateway_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
@@ -17,12 +19,14 @@ use registry::{error::ContactOperationError, ContactOperations};
 /// Gateway Methods for XPS
 pub struct XpsMethods<P: Middleware + 'static> {
     contact_operations: ContactOperations<GatewaySigner<P>>,
+    pub wallet: LocalWallet,
 }
 
 impl<P: Middleware> XpsMethods<P> {
     pub fn new(context: &GatewayContext<P>) -> Self {
         Self {
             contact_operations: ContactOperations::new(context.registry.clone()),
+            wallet: LocalWallet::new(&mut StdRng::from_entropy()),
         }
     }
 }
@@ -54,6 +58,10 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
             .map_err(RpcError::from)?;
 
         Ok(())
+    }
+
+    async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
+        Ok(self.wallet.address())
     }
 }
 
