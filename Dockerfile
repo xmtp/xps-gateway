@@ -5,6 +5,8 @@ USER xmtp
 
 RUN sudo apt update && sudo apt install -y pkg-config openssl libssl-dev
 
+COPY --from=ghcr.io/xmtp/foundry:latest /usr/local/bin/anvil /usr/local/bin/anvil
+
 ARG PROJECT=xps-gateway
 WORKDIR /workspaces/${PROJECT}
 COPY --chown=xmtp:xmtp . .
