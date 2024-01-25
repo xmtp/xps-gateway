@@ -25,10 +25,11 @@ use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, Env
 
 use xps_gateway::{
     types::{GatewayContext, GatewaySigner},
-    XpsMethods, XpsServer, SERVER_HOST,
+    XpsMethods, XpsServer,
 };
 
 const TEST_TIMEOUT: Duration = Duration::from_secs(20);
+pub const SERVER_HOST: &str = "127.0.0.1";
 
 pub async fn with_xps_client<F, R, T>(timeout: Option<Duration>, f: F) -> Result<T, Error>
 where
@@ -62,7 +63,10 @@ where
         .await
         .unwrap();
 
-    let server = Server::builder().build(SERVER_HOST).await.unwrap();
+    let server = Server::builder()
+        .build(SERVER_HOST.to_string() + ":0")
+        .await
+        .unwrap();
     let addr = server.local_addr().unwrap();
     let handle = server.start(XpsMethods::new(&context).into_rpc());
     let client = WsClientBuilder::default()

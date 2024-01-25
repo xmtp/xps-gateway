@@ -11,14 +11,14 @@ use std::str::FromStr;
 pub use crate::rpc::{XpsMethods, XpsServer};
 use crate::types::GatewayContext;
 
-pub const SERVER_HOST: &str = "127.0.0.1:0";
-
 /// Entrypoint for the xps Gateway
-pub async fn run() -> Result<()> {
+pub async fn run(host: String, port: u16) -> Result<()> {
     crate::util::init_logging();
 
+    let server_addr = format!("{}:{}", host, port);
+
     // a port of 0 allows the OS to choose an open port
-    let server = Server::builder().build(SERVER_HOST).await?;
+    let server = Server::builder().build(server_addr).await?;
     let addr = server.local_addr()?;
 
     let registry_contract = Address::from_str(DID_ETH_REGISTRY)?;

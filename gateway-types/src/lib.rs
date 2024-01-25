@@ -1,3 +1,5 @@
+//! Shared types between XPS Gateawy and client (libxmtp)
+
 use serde::{Deserialize, Serialize};
 
 /// Address of the did:ethr Registry on Sepolia

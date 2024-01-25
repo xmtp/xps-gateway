@@ -28,8 +28,8 @@ async fn test_say_hello() -> Result<(), Error> {
 async fn test_fail_send_message() -> Result<(), Error> {
     with_xps_client(None, |client, _, _, _| async move {
         let message = Message {
-            conversation_id: b"abcdefg".iter().map(|c| *c as u8).collect(),
-            payload: b"Hello World".iter().map(|c| *c as u8).collect(),
+            conversation_id: (b"abcdefg").to_vec(),
+            payload: (b"Hello World").to_vec(),
             v: vec![],
             r: vec![],
             s: vec![],
