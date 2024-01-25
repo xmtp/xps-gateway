@@ -22,3 +22,29 @@ pub async fn run(host: String, port: u16) -> Result<()> {
     handle.stopped().await;
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use std::str::FromStr;
+
+    use ethers::{
+        providers::{MockProvider, Provider},
+        types::{Address, U64},
+    };
+
+    use crate::types::GatewayContext;
+
+    pub async fn create_mock_context() -> (GatewayContext<Provider<MockProvider>>, MockProvider) {
+        let (provider, mock) = Provider::mocked();
+        mock.push(U64::from(2)).unwrap();
+
+        let gateway = GatewayContext::new(
+            Address::from_str("0x0000000000000000000000000000000000000000").unwrap(),
+            provider,
+        )
+        .await
+        .unwrap();
+
+        (gateway, mock)
+    }
+}
