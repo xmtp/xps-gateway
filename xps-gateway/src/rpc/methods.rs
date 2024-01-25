@@ -6,7 +6,10 @@ use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
-use ethers::{core::types::Signature, providers::Middleware};
+use ethers::{
+    core::types::Signature,
+    providers::{Middleware, Provider, Ws},
+};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use thiserror::Error;
@@ -15,12 +18,12 @@ use gateway_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
 
 /// Gateway Methods for XPS
-pub struct XpsMethods {
-    contact_operations: ContactOperations<GatewaySigner>,
+pub struct XpsMethods<P: Middleware + 'static> {
+    contact_operations: ContactOperations<GatewaySigner<P>>,
 }
 
-impl XpsMethods {
-    pub fn new(context: &GatewayContext) -> Self {
+impl<P: Middleware> XpsMethods<P> {
+    pub fn new(context: &GatewayContext<P>) -> Self {
         Self {
             contact_operations: ContactOperations::new(context.registry.clone()),
         }
@@ -28,7 +31,7 @@ impl XpsMethods {
 }
 
 #[async_trait]
-impl XpsServer for XpsMethods {
+impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
     async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned> {
         //TODO: Stub for sendMessage, ref: [discussion](https://github.com/xmtp/xps-gateway/discussions/11)
         log::debug!("xps_sendMessage called");

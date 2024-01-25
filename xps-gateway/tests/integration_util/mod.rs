@@ -33,7 +33,12 @@ pub const SERVER_HOST: &str = "127.0.0.1";
 
 pub async fn with_xps_client<F, R, T>(timeout: Option<Duration>, f: F) -> Result<T, Error>
 where
-    F: FnOnce(WsClient, GatewayContext, Resolver<Arc<GatewaySigner>>, Arc<AnvilInstance>) -> R
+    F: FnOnce(
+            WsClient,
+            GatewayContext<Provider<Ws>>,
+            Resolver<Arc<GatewaySigner<Provider<Ws>>>>,
+            Arc<AnvilInstance>,
+        ) -> R
         + 'static
         + Send,
     R: Future<Output = Result<T, Error>> + FutureExt + Send + 'static,
@@ -43,8 +48,12 @@ where
     log::debug!("Anvil spawned at {}", anvil.ws_endpoint());
     let registry_address = deploy_to_anvil(&anvil).await;
     log::debug!("Contract deployed at {}", registry_address);
+    let provider = Provider::<Ws>::connect(anvil.ws_endpoint())
+        .await
+        .unwrap()
+        .interval(std::time::Duration::from_millis(10u64));
 
-    let context = GatewayContext::new(registry_address, anvil.ws_endpoint()).await?;
+    let context = GatewayContext::new(registry_address, provider).await?;
 
     let accounts = context.signer.get_accounts().await?;
     let from = accounts[0];
