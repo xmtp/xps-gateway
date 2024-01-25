@@ -4,6 +4,7 @@
 
 This _postal service_ gateway implements the XMTP transport for registration, inbox and conversations.
 
+[![Test](https://github.com/xmtp/xps-gateway/actions/workflows/ci-image.yml/badge.svg)](https://github.com/xmtp/xps-gateway/actions/workflows/ci-image.yml)
 [![codecov](https://codecov.io/gh/xmtp/xps-gateway/graph/badge.svg?token=HXZBPB9GIN)](https://codecov.io/gh/xmtp/xps-gateway)
 
 ## Quick Start (Development)
