@@ -38,6 +38,7 @@ where
             "Revoking attribute {:#?}",
             String::from_utf8_lossy(&attribute)
         );
+
         self.registry
             .revoke_attribute_signed(
                 address,

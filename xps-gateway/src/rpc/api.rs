@@ -1,11 +1,11 @@
 //! Trait Interface Definitions for XPS JSON-RPC
 
 use ethers::core::types::Signature;
+use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
-use ethers::prelude::*; 
 
-use lib_didethresolver::types::XmtpAttribute;
 use gateway_types::Message;
+use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods
 #[rpc(server, client, namespace = "xps")]

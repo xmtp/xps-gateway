@@ -6,12 +6,12 @@ use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
+use ethers::prelude::*;
 use ethers::{core::types::Signature, providers::Middleware};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
-use thiserror::Error;
-use ethers::prelude::*;
 use rand::{rngs::StdRng, SeedableRng};
+use thiserror::Error;
 
 use gateway_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
