@@ -125,10 +125,8 @@ pub async fn get_user(
     client(&anvil, wallet).await
 }
 
-#[cfg(test)]
 static INIT: Once = Once::new();
 
-#[cfg(test)]
 fn init_test_logging() {
     INIT.call_once(|| {
         let fmt = fmt::layer().compact();

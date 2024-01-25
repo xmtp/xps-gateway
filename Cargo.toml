@@ -27,7 +27,7 @@ anyhow = "1.0"
 thiserror = "1.0"
 ethers = { version = "2", features = ["abigen"] }
 ctor = "0.2"
-lib-didethresolver = { path = "../../../workspace-didethresolver/insipx/revoke-installation/lib" }
+lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", package = "lib_didethresolver" }
 gateway-types = { path = "./gateway-types" }
 rustc-hex = "2.1"
 hex = "0.4"
