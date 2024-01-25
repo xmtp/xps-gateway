@@ -2070,6 +2070,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "lib-didethresolver"
 version = "0.1.0"
+source = "git+https://github.com/xmtp/didethresolver?branch=insipx/revoke-installation#371052af2c78c77bef10f5d8df006af65f1ec2a1"
 dependencies = [
  "async-trait",
  "base64 0.21.7",
