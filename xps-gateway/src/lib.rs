@@ -16,7 +16,7 @@ pub async fn run(host: String, port: u16) -> Result<()> {
     // a port of 0 allows the OS to choose an open port
     let server = Server::builder().build(server_addr).await?;
     let addr = server.local_addr()?;
-    let handle = server.start(rpc::XpsMethods.into_rpc());
+    let handle = server.start(XpsMethods::new().into_rpc());
 
     log::info!("Server Started at {addr}");
     handle.stopped().await;

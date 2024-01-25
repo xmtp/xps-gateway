@@ -4,17 +4,23 @@ use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
+use ethers::prelude::*;
 use jsonrpsee::types::ErrorObjectOwned;
+use rand::{rngs::StdRng, SeedableRng};
 
 use crate::types::Message;
 
 /// Gateway Methods for XPS
-pub struct XpsMethods;
+pub struct XpsMethods {
+    pub wallet: LocalWallet,
+}
 
 impl XpsMethods {
     /// Create a new instance of the XpsMethods struct
     pub fn new() -> Self {
-        Self {}
+        Self {
+            wallet: LocalWallet::new(&mut StdRng::from_entropy()),
+        }
     }
 }
 
@@ -35,5 +41,9 @@ impl XpsServer for XpsMethods {
     async fn status(&self) -> Result<String, ErrorObjectOwned> {
         log::debug!("xps_status called");
         Ok("OK".to_string())
+    }
+
+    async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
+        Ok(self.wallet.address())
     }
 }
