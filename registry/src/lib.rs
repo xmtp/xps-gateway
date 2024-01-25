@@ -38,18 +38,20 @@ where
             "Revoking attribute {:#?}",
             String::from_utf8_lossy(&attribute)
         );
-        self.registry
-            .revoke_attribute_signed(
-                address,
-                signature.v.try_into()?,
-                signature.r.into(),
-                signature.s.into(),
-                attribute,
-                value.into(),
-            )
-            .send()
-            .await?
-            .await?;
+        let res = self.registry.revoke_attribute_signed(
+            address,
+            signature.v.try_into()?,
+            signature.r.into(),
+            signature.s.into(),
+            attribute,
+            value.into(),
+        );
+
+        let res = res.send().await;
+        if let Err(ref e) = res {
+            println!("{}", e);
+        }
+        res?.await?;
 
         Ok(())
     }

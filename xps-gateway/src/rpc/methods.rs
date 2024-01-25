@@ -6,10 +6,7 @@ use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
-use ethers::{
-    core::types::Signature,
-    providers::{Middleware, Provider, Ws},
-};
+use ethers::{core::types::Signature, providers::Middleware};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use thiserror::Error;
