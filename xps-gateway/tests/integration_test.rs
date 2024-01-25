@@ -8,10 +8,14 @@ use futures::future::FutureExt;
 use std::{future::Future, time::Duration};
 use tokio::time::timeout as timeout_tokio;
 
-use xps_gateway::{rpc::XpsClient, types::Message, XpsMethods, XpsServer};
+use ethers::providers::{Http, Provider};
+use xps_gateway::{rpc::*, types::Message, XpsMethods};
 
 const TEST_TIMEOUT: Duration = Duration::from_secs(10);
 pub const SERVER_HOST: &str = "127.0.0.1";
+
+pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
+pub(crate) const DEFAULT_PROVIDER: &str = "http://127.0.0.1:8545";
 
 #[cfg(test)]
 mod it {
@@ -53,7 +57,9 @@ where
     let server_addr = format!("{}:{}", SERVER_HOST, 0);
     let server = Server::builder().build(server_addr).await.unwrap();
     let addr = server.local_addr().unwrap();
-    let handle = server.start(XpsMethods::new().into_rpc());
+    let provider = Provider::<Http>::try_from(DEFAULT_PROVIDER).unwrap();
+    let xps_methods = XpsMethods::new(provider, DID_ETH_REGISTRY.to_string());
+    let handle = server.start(xps_methods.into_rpc());
     let client = WsClientBuilder::default()
         .build(&format!("ws://{addr}"))
         .await

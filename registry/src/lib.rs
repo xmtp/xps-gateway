@@ -1,19 +1,12 @@
+extern crate ethers;
+extern crate tokio;
+
 pub mod registry;
 pub mod types;
 
-pub struct XpsRegistry;
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+use ethers::providers::{Http, Provider};
+use std::sync::Arc;
+pub struct XpsRegistry {
+    provider: Arc<Provider<Http>>,
+    registry_contract_address: String,
 }

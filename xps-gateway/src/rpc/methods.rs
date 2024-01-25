@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use jsonrpsee::types::ErrorObjectOwned;
 
 use crate::types::{GrantInstallationResult, Message, Signature};
+use ethers::providers::{Http, Provider};
 use registry::XpsRegistry;
 
 /// Gateway Methods for XPS
@@ -16,16 +17,10 @@ pub struct XpsMethods {
 
 impl XpsMethods {
     /// Create a new instance of the XpsMethods struct
-    pub fn new() -> Self {
+    pub fn new(provider: Provider<Http>, registry_address: String) -> Self {
         Self {
-            registry: registry::XpsRegistry {},
+            registry: registry::XpsRegistry::new(provider, registry_address),
         }
-    }
-}
-
-impl Default for XpsMethods {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -42,6 +37,36 @@ impl XpsServer for XpsMethods {
         Ok("OK".to_string())
     }
 
+    /// Asynchronously grants installation access in the registry.
+    ///
+    /// This function is responsible for granting a new installation based on the provided
+    /// decentralized identifier (DID), name, value, and signature. It performs validation
+    /// checks on the input parameters (name and value lengths) and then invokes the
+    /// registry call to grant installation access.
+    ///
+    /// # Arguments
+    /// * `did` - A `String` representing the decentralized identifier.
+    /// * `name` - A `String` representing the name of the installation, limited to 32 bytes.
+    /// * `value` - A `String` representing the value associated with the installation, limited to 4096 bytes.
+    /// * `signature` - A `Signature` struct representing the signature for the operation.
+    ///
+    /// # Returns
+    /// This function returns a `Result` which, on success, includes a `GrantInstallationResult`
+    /// containing the status, message, and transaction details of the operation.
+    ///
+    /// # Errors
+    /// Returns `ErrorObjectOwned` if input validation fails (e.g., if the name or value exceeds their respective length limits).
+    ///
+    /// # Examples
+    /// ```
+    /// // Assume the function is part of an implementation and proper context is set
+    /// let result = obj.grant_installation(
+    ///     "did:example:123".to_string(),
+    ///     "installName".to_string(),
+    ///     "installationValue".to_string(),
+    ///     signature,
+    /// ).await;
+    /// ```
     async fn grant_installation(
         &self,
         did: String,
