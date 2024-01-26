@@ -3,9 +3,18 @@ pub mod types;
 mod util;
 
 use anyhow::Result;
+use ethers::{
+    abi::Address,
+    providers::{Provider, Ws},
+};
+use gateway_types::DID_ETH_REGISTRY;
 use jsonrpsee::server::Server;
+use std::str::FromStr;
 
-pub use crate::rpc::{XpsMethods, XpsServer};
+pub use crate::{
+    rpc::{XpsMethods, XpsServer}, 
+    types::GatewayContext
+};
 
 /// Entrypoint for the xps Gateway
 pub async fn run(host: String, port: u16) -> Result<()> {
@@ -16,7 +25,15 @@ pub async fn run(host: String, port: u16) -> Result<()> {
     // a port of 0 allows the OS to choose an open port
     let server = Server::builder().build(server_addr).await?;
     let addr = server.local_addr()?;
-    let handle = server.start(XpsMethods::new().into_rpc());
+
+    let registry_contract = Address::from_str(DID_ETH_REGISTRY)?;
+    let provider = Provider::<Ws>::connect("wss://ethereum-sepolia.publicnode.com")
+        .await
+        .unwrap();
+    
+    let context = GatewayContext::new(registry_contract, provider).await?;
+    let xps_methods = rpc::XpsMethods::new(&context);
+    let handle = server.start(xps_methods.into_rpc());
 
     log::info!("Server Started at {addr}");
     handle.stopped().await;
@@ -25,33 +42,13 @@ pub async fn run(host: String, port: u16) -> Result<()> {
 
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
-
     use ethers::{
-        providers::{MockProvider, Provider},
-        types::{Address, U64, H256, TxHash},
-        prelude::{PendingTransaction, MockResponse, TransactionReceipt, Transaction}
+        providers::MockProvider,
+        types::{U64, TxHash},
+        prelude::{TransactionReceipt, Transaction}
     };
-    use serde_json::Value;
     use std::borrow::Borrow;
     use serde::Serialize;
-/*
-    use crate::types::GatewayContext;
-
-    pub async fn create_mock_context() -> (GatewayContext<Provider<MockProvider>>, MockProvider) {
-        let (provider, mock) = Provider::mocked();
-        mock.push(U64::from(2)).unwrap();
-
-        let gateway = GatewayContext::new(
-            Address::from_str("0x0000000000000000000000000000000000000000").unwrap(),
-            provider,
-        )
-        .await
-        .unwrap();
-
-        (gateway, mock)
-    }
-    */
 
     fn setup_mock_tx(mock: &mut MockProvider) {
         mock.push(TransactionReceipt::default()).unwrap(); // eth_getTransactionReceipt
@@ -84,6 +81,17 @@ mod test {
         /// let pending = provider.send_transaction(tx, None).await.unwrap().await.unwrap(); 
         /// ```
         fn set_transaction_response<T: Serialize + Send + Sync, R: Borrow<T>>(&mut self, response: Option<R>);
+        
+
+        /// Set the response for a transaction to a Contract
+        fn set_contract_response<T: Serialize + Send + Sync, R: Borrow<T>>(&mut self, response: Option<R>) {
+            todo!()
+        }
+        
+        /// Set the response for a call to a contract
+        fn set_call_response<T: Serialize + Send + Sync, R: Borrow<T>>(&mut self, response: Option<R>) {
+            todo!()
+        }
     }
 
     impl MockProviderExt for MockProvider {

@@ -1,37 +1,37 @@
 //! Interface Implementations for XPS JSON-RPC
 
+use crate::types::{GatewayContext, GatewaySigner};
+
 use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
 use ethers::prelude::*;
+use ethers::{core::types::Signature, providers::Middleware};
 use jsonrpsee::types::ErrorObjectOwned;
-use rand::{rngs::StdRng, SeedableRng};
+use lib_didethresolver::types::XmtpAttribute;
+use thiserror::Error;
 
-use crate::types::Message;
+use gateway_types::Message;
+use registry::{error::ContactOperationError, ContactOperations};
 
 /// Gateway Methods for XPS
-pub struct XpsMethods {
+pub struct XpsMethods<P: Middleware + 'static> {
+    contact_operations: ContactOperations<GatewaySigner<P>>,
     pub wallet: LocalWallet,
 }
 
-impl XpsMethods {
-    /// Create a new instance of the XpsMethods struct
-    pub fn new() -> Self {
+impl<P: Middleware> XpsMethods<P> {
+    pub fn new(context: &GatewayContext<P>) -> Self {
         Self {
-            wallet: LocalWallet::new(&mut StdRng::from_entropy()),
+            contact_operations: ContactOperations::new(context.registry.clone()),
+            wallet: context.wallet.clone(),
         }
     }
 }
 
-impl Default for XpsMethods {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[async_trait]
-impl XpsServer for XpsMethods {
+impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
     async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned> {
         //TODO: Stub for sendMessage, ref: [discussion](https://github.com/xmtp/xps-gateway/discussions/11)
         log::debug!("xps_sendMessage called");
@@ -43,16 +43,48 @@ impl XpsServer for XpsMethods {
         Ok("OK".to_string())
     }
 
+    async fn revoke_installation(
+        &self,
+        did: String,
+        name: XmtpAttribute,
+        value: Vec<u8>,
+        signature: Signature,
+    ) -> Result<(), ErrorObjectOwned> {
+        log::debug!("xps_revokeInstallation called");
+        self.contact_operations
+            .revoke_installation(did, name, value, signature)
+            .await
+            .map_err(RpcError::from)?;
+
+        Ok(())
+    }
+
     async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
         Ok(self.wallet.address())
     }
 }
 
+/// Error types for DID Registry JSON-RPC
+#[derive(Debug, Error)]
+enum RpcError<M: Middleware> {
+    /// A public key parameter was invalid
+    #[error(transparent)]
+    ContactOperation(#[from] ContactOperationError<M>),
+}
+
+impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
+    fn from(error: RpcError<M>) -> Self {
+        match error {
+            RpcError::ContactOperation(c) => {
+                ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use ethers::types::{Block, Transaction, U64};
     use lib_didethresolver::types::{KeyEncoding, XmtpKeyPurpose};
-    use std::str::FromStr;
     use crate::test::MockProviderExt;
 
     use super::*;
@@ -63,18 +95,16 @@ mod tests {
     
     #[tokio::test]
     async fn test_rpc_wallet_address() {
-        let methods = XpsMethods::new();
+        let (context, _) = GatewayContext::mocked().await;
+        let methods = XpsMethods::new(&context);
 
         let res = methods.wallet_address().await.unwrap();
         assert_eq!(type_of(res), "primitive_types::H160");
     }
-/*
+
     #[tokio::test]
     async fn test_rpc_revoke_installation() {
-        let (context, mock) = crate::test::create_mock_context().await;
-
-        mock.push(U64::from(0)).unwrap(); // transactioncount
-        mock.push(Block::<Transaction>::default()).unwrap(); // latest block
+        let (context, mut mock) = GatewayContext::mocked().await;
 
         let methods = XpsMethods::new(&context);
 
@@ -83,7 +113,10 @@ mod tests {
             purpose: XmtpKeyPurpose::Installation,
         };
         let value = vec![0x01, 0x02, 0x03];
-        let res = methods
+        
+        mock.set_transaction_response(None::<()>);
+
+        methods
             .revoke_installation(
                 "0x7e575682a8e450e33eb0493f9972821ae333cd7f".to_string(),
                 attr,
@@ -94,24 +127,8 @@ mod tests {
                     v: 0x01,
                 },
             )
-            .await;
-        if let Err(e) = res {
-            println!("{:?}", e);
-            println!("{}", e);
-        }
-    }
-    */
+            .await.unwrap();
 
-    #[tokio::test]
-    async fn test_eth_tx() {
-        let (mut provider, mut mock) = Provider::mocked();
-        provider.set_interval(std::time::Duration::from_millis(1));
-
-        let to = Address::from_str("0x7e575682a8e450e33eb0493f9972821ae333cd7f").unwrap();
-        let from = Address::from_str("0x0000000000000000000000000000000000000000").unwrap();
-        let tx = TransactionRequest::new().to(to).value(1000).from(from);
-        mock.set_transaction_response(None::<()>);
-        let pending = provider.send_transaction(tx, None).await.unwrap().await.unwrap(); 
-        
     }
 }
+
