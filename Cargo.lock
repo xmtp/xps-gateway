@@ -48,6 +48,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "android-tzdata"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
+
+[[package]]
+name = "android_system_properties"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "anstream"
 version = "0.6.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -390,7 +405,12 @@ version = "0.4.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41daef31d7a747c5c847246f36de49ced6f7403b4cdabc807a97b5cc184cda7a"
 dependencies = [
+ "android-tzdata",
+ "iana-time-zone",
+ "js-sys",
  "num-traits",
+ "wasm-bindgen",
+ "windows-targets 0.52.0",
 ]
 
 [[package]]
@@ -916,17 +936,41 @@ dependencies = [
 [[package]]
 name = "ethers"
 version = "2.0.11"
+dependencies = [
+ "ethers-addressbook 2.0.11",
+ "ethers-contract 2.0.11",
+ "ethers-core 2.0.11",
+ "ethers-etherscan 2.0.11",
+ "ethers-middleware 2.0.11",
+ "ethers-providers 2.0.11",
+ "ethers-signers 2.0.11",
+ "ethers-solc 2.0.11",
+]
+
+[[package]]
+name = "ethers"
+version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a5344eea9b20effb5efeaad29418215c4d27017639fd1f908260f59cbbd226e"
 dependencies = [
- "ethers-addressbook",
- "ethers-contract",
- "ethers-core",
- "ethers-etherscan",
- "ethers-middleware",
- "ethers-providers",
- "ethers-signers",
- "ethers-solc",
+ "ethers-addressbook 2.0.12",
+ "ethers-contract 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-core 2.0.12",
+ "ethers-etherscan 2.0.12",
+ "ethers-middleware 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-providers 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-signers 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-solc 2.0.12",
+]
+
+[[package]]
+name = "ethers-addressbook"
+version = "2.0.11"
+dependencies = [
+ "ethers-core 2.0.11",
+ "once_cell",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -935,10 +979,27 @@ version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9bf35eb7d2e2092ad41f584951e08ec7c077b142dba29c4f1b8f52d2efddc49c"
 dependencies = [
- "ethers-core",
+ "ethers-core 2.0.12",
  "once_cell",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "ethers-contract"
+version = "2.0.11"
+dependencies = [
+ "const-hex",
+ "ethers-contract-abigen 2.0.11",
+ "ethers-contract-derive 2.0.11",
+ "ethers-core 2.0.11",
+ "ethers-providers 2.0.11",
+ "futures-util",
+ "once_cell",
+ "pin-project",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -948,16 +1009,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0111ead599d17a7bff6985fd5756f39ca7033edc79a31b23026a8d5d64fa95cd"
 dependencies = [
  "const-hex",
- "ethers-contract-abigen",
- "ethers-contract-derive",
- "ethers-core",
- "ethers-providers",
+ "ethers-contract-abigen 2.0.12",
+ "ethers-contract-derive 2.0.12",
+ "ethers-core 2.0.12",
+ "ethers-providers 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "once_cell",
  "pin-project",
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "ethers-contract-abigen"
+version = "2.0.11"
+dependencies = [
+ "Inflector",
+ "const-hex",
+ "dunce",
+ "ethers-core 2.0.11",
+ "ethers-etherscan 2.0.11",
+ "eyre",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "syn 2.0.48",
+ "toml",
+ "walkdir",
 ]
 
 [[package]]
@@ -969,8 +1052,8 @@ dependencies = [
  "Inflector",
  "const-hex",
  "dunce",
- "ethers-core",
- "ethers-etherscan",
+ "ethers-core 2.0.12",
+ "ethers-etherscan 2.0.12",
  "eyre",
  "prettyplease",
  "proc-macro2",
@@ -986,18 +1069,60 @@ dependencies = [
 
 [[package]]
 name = "ethers-contract-derive"
+version = "2.0.11"
+dependencies = [
+ "Inflector",
+ "const-hex",
+ "ethers-contract-abigen 2.0.11",
+ "ethers-core 2.0.11",
+ "proc-macro2",
+ "quote",
+ "serde_json",
+ "syn 2.0.48",
+]
+
+[[package]]
+name = "ethers-contract-derive"
 version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7465c814a2ecd0de0442160da13584205d1cdc08f4717a6511cad455bd5d7dc4"
 dependencies = [
  "Inflector",
  "const-hex",
- "ethers-contract-abigen",
- "ethers-core",
+ "ethers-contract-abigen 2.0.12",
+ "ethers-core 2.0.12",
  "proc-macro2",
  "quote",
  "serde_json",
  "syn 2.0.48",
+]
+
+[[package]]
+name = "ethers-core"
+version = "2.0.11"
+dependencies = [
+ "arrayvec",
+ "bytes",
+ "cargo_metadata",
+ "chrono",
+ "const-hex",
+ "elliptic-curve",
+ "ethabi",
+ "generic-array",
+ "k256",
+ "num_enum",
+ "once_cell",
+ "open-fastrlp",
+ "rand",
+ "rlp",
+ "serde",
+ "serde_json",
+ "strum",
+ "syn 2.0.48",
+ "tempfile",
+ "thiserror",
+ "tiny-keccak",
+ "unicode-xid",
 ]
 
 [[package]]
@@ -1032,12 +1157,26 @@ dependencies = [
 
 [[package]]
 name = "ethers-etherscan"
+version = "2.0.11"
+dependencies = [
+ "chrono",
+ "ethers-core 2.0.11",
+ "reqwest",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "ethers-etherscan"
 version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "facabf8551b4d1a3c08cb935e7fca187804b6c2525cc0dafb8e5a6dd453a24de"
 dependencies = [
  "chrono",
- "ethers-core",
+ "ethers-core 2.0.12",
  "reqwest",
  "semver",
  "serde",
@@ -1049,16 +1188,41 @@ dependencies = [
 [[package]]
 name = "ethers-middleware"
 version = "2.0.11"
+dependencies = [
+ "async-trait",
+ "auto_impl",
+ "ethers-contract 2.0.11",
+ "ethers-core 2.0.11",
+ "ethers-etherscan 2.0.11",
+ "ethers-providers 2.0.11",
+ "ethers-signers 2.0.11",
+ "futures-channel",
+ "futures-locks",
+ "futures-util",
+ "instant",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+ "url",
+]
+
+[[package]]
+name = "ethers-middleware"
+version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "681ece6eb1d10f7cf4f873059a77c04ff1de4f35c63dd7bccde8f438374fcb93"
 dependencies = [
  "async-trait",
  "auto_impl",
- "ethers-contract",
- "ethers-core",
- "ethers-etherscan",
- "ethers-providers",
- "ethers-signers",
+ "ethers-contract 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-core 2.0.12",
+ "ethers-etherscan 2.0.12",
+ "ethers-providers 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethers-signers 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-channel",
  "futures-locks",
  "futures-util",
@@ -1076,6 +1240,41 @@ dependencies = [
 [[package]]
 name = "ethers-providers"
 version = "2.0.11"
+dependencies = [
+ "async-trait",
+ "auto_impl",
+ "base64 0.21.7",
+ "bytes",
+ "const-hex",
+ "enr",
+ "ethers-core 2.0.11",
+ "futures-core",
+ "futures-timer",
+ "futures-util",
+ "hashers",
+ "http",
+ "instant",
+ "jsonwebtoken",
+ "once_cell",
+ "pin-project",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tokio-tungstenite",
+ "tracing",
+ "tracing-futures",
+ "url",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "ws_stream_wasm",
+]
+
+[[package]]
+name = "ethers-providers"
+version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25d6c0c9455d93d4990c06e049abf9b30daf148cf461ee939c11d88907c60816"
 dependencies = [
@@ -1085,7 +1284,7 @@ dependencies = [
  "bytes",
  "const-hex",
  "enr",
- "ethers-core",
+ "ethers-core 2.0.12",
  "futures-core",
  "futures-timer",
  "futures-util",
@@ -1113,6 +1312,23 @@ dependencies = [
 [[package]]
 name = "ethers-signers"
 version = "2.0.11"
+dependencies = [
+ "async-trait",
+ "coins-bip32",
+ "coins-bip39",
+ "const-hex",
+ "elliptic-curve",
+ "eth-keystore",
+ "ethers-core 2.0.11",
+ "rand",
+ "sha2",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "ethers-signers"
+version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cb1b714e227bbd2d8c53528adb580b203009728b17d0d0e4119353aa9bc5532"
 dependencies = [
@@ -1122,11 +1338,41 @@ dependencies = [
  "const-hex",
  "elliptic-curve",
  "eth-keystore",
- "ethers-core",
+ "ethers-core 2.0.12",
  "rand",
  "sha2",
  "thiserror",
  "tracing",
+]
+
+[[package]]
+name = "ethers-solc"
+version = "2.0.11"
+dependencies = [
+ "cfg-if",
+ "const-hex",
+ "dirs",
+ "dunce",
+ "ethers-core 2.0.11",
+ "glob",
+ "home",
+ "md-5",
+ "num_cpus",
+ "once_cell",
+ "path-slash",
+ "rayon",
+ "regex",
+ "semver",
+ "serde",
+ "serde_json",
+ "solang-parser",
+ "svm-rs",
+ "thiserror",
+ "tiny-keccak",
+ "tokio",
+ "tracing",
+ "walkdir",
+ "yansi",
 ]
 
 [[package]]
@@ -1139,7 +1385,7 @@ dependencies = [
  "const-hex",
  "dirs",
  "dunce",
- "ethers-core",
+ "ethers-core 2.0.12",
  "glob",
  "home",
  "md-5",
@@ -1621,6 +1867,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "iana-time-zone"
+version = "0.1.59"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6a67363e2aa4443928ce15e57ebae94fd8949958fd1223c4cfc0cd473ad7539"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "wasm-bindgen",
+ "windows-core",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "idna"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2000,6 +2269,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
+name = "lib-didethresolver"
+version = "0.1.0"
+source = "git+https://github.com/xmtp/didethresolver?branch=main#4bf3d4b539b6090fdd46367d3a76863f3c449e7f"
+dependencies = [
+ "async-trait",
+ "base64 0.21.7",
+ "bs58",
+ "chrono",
+ "ethers 2.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hex",
+ "jsonrpsee",
+ "log",
+ "peg",
+ "percent-encoding",
+ "rand",
+ "rustc-hex",
+ "serde",
+ "sha3",
+ "smart-default",
+ "thiserror",
+ "tiny-keccak",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2334,6 +2630,33 @@ dependencies = [
  "digest 0.10.7",
  "hmac",
 ]
+
+[[package]]
+name = "peg"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "400bcab7d219c38abf8bd7cc2054eb9bbbd4312d66f6a5557d572a203f646f61"
+dependencies = [
+ "peg-macros",
+ "peg-runtime",
+]
+
+[[package]]
+name = "peg-macros"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46e61cce859b76d19090f62da50a9fe92bab7c2a5f09e183763559a2ac392c90"
+dependencies = [
+ "peg-runtime",
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
+name = "peg-runtime"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36bae92c60fa2398ce4678b98b2c4b5a7c61099961ca1fa305aec04a9ad28922"
 
 [[package]]
 name = "pem"
@@ -3280,6 +3603,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6ecd384b10a64542d77071bd64bd7b231f4ed5940fba55e98c3de13824cf3d7"
 
 [[package]]
+name = "smart-default"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0eb01866308440fc64d6c44d9e86c5cc17adfe33c4d6eed55da9145044d0ffc1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
+]
+
+[[package]]
 name = "socket2"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3902,6 +4236,7 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]
@@ -4084,6 +4419,15 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "windows-core"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33ab640c8d7e35bf8ba19b884ba838ceb4fba93a4e8c65a9059d08afcfc683d9"
+dependencies = [
+ "windows-targets 0.52.0",
+]
 
 [[package]]
 name = "windows-sys"
@@ -4272,12 +4616,15 @@ dependencies = [
  "async-trait",
  "clap",
  "ctor",
- "ethers",
+ "ethers 2.0.11",
  "futures",
+ "hex",
  "jsonrpsee",
+ "lib-didethresolver",
  "log",
  "rand",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "tokio-stream",

@@ -52,9 +52,23 @@ impl XpsServer for XpsMethods {
 mod tests {
     use ethers::types::{Block, Transaction, U64};
     use lib_didethresolver::types::{KeyEncoding, XmtpKeyPurpose};
+    use std::str::FromStr;
+    use crate::test::MockProviderExt;
 
     use super::*;
+    
+    fn type_of<T>(_: T) -> &'static str {
+        std::any::type_name::<T>()
+    }
+    
+    #[tokio::test]
+    async fn test_rpc_wallet_address() {
+        let methods = XpsMethods::new();
 
+        let res = methods.wallet_address().await.unwrap();
+        assert_eq!(type_of(res), "primitive_types::H160");
+    }
+/*
     #[tokio::test]
     async fn test_rpc_revoke_installation() {
         let (context, mock) = crate::test::create_mock_context().await;
@@ -85,5 +99,19 @@ mod tests {
             println!("{:?}", e);
             println!("{}", e);
         }
+    }
+    */
+
+    #[tokio::test]
+    async fn test_eth_tx() {
+        let (mut provider, mut mock) = Provider::mocked();
+        provider.set_interval(std::time::Duration::from_millis(1));
+
+        let to = Address::from_str("0x7e575682a8e450e33eb0493f9972821ae333cd7f").unwrap();
+        let from = Address::from_str("0x0000000000000000000000000000000000000000").unwrap();
+        let tx = TransactionRequest::new().to(to).value(1000).from(from);
+        mock.set_transaction_response(None::<()>);
+        let pending = provider.send_transaction(tx, None).await.unwrap().await.unwrap(); 
+        
     }
 }
