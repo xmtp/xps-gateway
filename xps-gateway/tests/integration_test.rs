@@ -19,6 +19,8 @@ pub(crate) const DEFAULT_PROVIDER: &str = "http://127.0.0.1:8545";
 
 #[cfg(test)]
 mod it {
+    use ethers::abi::Address;
+
     use super::*;
 
     #[tokio::test]
@@ -43,6 +45,16 @@ mod it {
             };
             let result = client.send_message(message).await;
             assert!(result.is_err());
+            Ok(())
+        })
+        .await
+    }
+
+    #[tokio::test]
+    async fn test_wallet_address() -> Result<(), Error> {
+        with_xps_client(None, |client| async move {
+            let result = client.wallet_address().await?;
+            assert_ne!(result, Address::zero());
             Ok(())
         })
         .await

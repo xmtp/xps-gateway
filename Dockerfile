@@ -2,6 +2,7 @@ FROM ghcr.io/xmtp/rust:latest
 ARG CARGO_INCREMENTAL
 
 USER xmtp
+ENV USER=xmtp
 
 RUN sudo apt update && sudo apt install -y pkg-config openssl libssl-dev
 
@@ -9,17 +10,18 @@ ARG PROJECT=xps-gateway
 WORKDIR /workspaces/${PROJECT}
 COPY --chown=xmtp:xmtp . .
 
-ENV PATH=~xmtp/.cargo/bin:$PATH
+ENV PATH=~${USER}/.cargo/bin:$PATH
 ENV USER=xmtp
 
 ENV CARGO_INCREMENTAL=${CARGO_INCREMENTAL:-1}
 RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps -- -D warnings
-RUN cargo test
-RUN cargo build --release
-RUN CARGO_TARGET_DIR=/workspaces/${PROJECT}/target cargo install --path xps-gateway --bin=xps_gateway
-RUN valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ${HOME}/.cargo/bin/xps_gateway --help
+RUN cargo test --workspace --all-features
+RUN CARGO_TARGET_DIR=/workspaces/${PROJECT}/target cargo install --path xps-gateway --bin=xps_gateway --root=~${USER}/.cargo/
+RUN valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ~${USER}/.cargo/bin/xps_gateway --help
+
+CMD RUST_LOG=info cargo run -- --host 0.0.0.0 --port 8080
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name="rustdev" \

@@ -4,7 +4,9 @@ use super::api::*;
 use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
+use ethers::prelude::*;
 use jsonrpsee::types::ErrorObjectOwned;
+use rand::{rngs::StdRng, SeedableRng};
 
 use crate::types::{GrantInstallationResult, Message, Signature};
 use ethers::providers::{Http, Provider};
@@ -13,6 +15,7 @@ use registry::XpsRegistry;
 /// Gateway Methods for XPS
 pub struct XpsMethods {
     pub registry: XpsRegistry,
+    pub wallet: LocalWallet,
 }
 
 impl XpsMethods {
@@ -20,9 +23,16 @@ impl XpsMethods {
     pub fn new(provider: Provider<Http>, registry_address: String) -> Self {
         Self {
             registry: registry::XpsRegistry::new(provider, registry_address),
+            wallet: LocalWallet::new(&mut StdRng::from_entropy()),
         }
     }
 }
+
+/*impl Default for XpsMethods {
+    fn default() -> Self {
+        Self::new()
+    }
+}*/
 
 #[async_trait]
 impl XpsServer for XpsMethods {
@@ -111,6 +121,10 @@ impl XpsServer for XpsMethods {
             message: result.message,
             transaction: result.transaction,
         })
+    }
+
+    async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
+        Ok(self.wallet.address())
     }
 }
 

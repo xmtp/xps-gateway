@@ -3,6 +3,7 @@
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
 use crate::types::{GrantInstallationResult, Message, Signature};
+use ethers::prelude::*;
 
 /// XPS JSON-RPC Interface Methods
 #[rpc(server, client, namespace = "xps")]
@@ -195,4 +196,7 @@ pub trait Xps {
     /// - The system should have proper error handling to deal with invalid requests, unauthorized access, and other potential issues.
     #[method(name = "status")]
     async fn status(&self) -> Result<String, ErrorObjectOwned>;
+
+    #[method(name = "walletAddress")]
+    async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned>;
 }
