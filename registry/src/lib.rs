@@ -30,6 +30,7 @@ where
         name: XmtpAttribute,
         value: Vec<u8>,
         signature: Signature,
+        validity: U256,
     ) -> Result<GrantInstallationResult, ContactOperationError<M>> {
         // for now, we will just assume the DID is a valid ethereum wallet address
         // TODO: Parse or resolve the actual DID
@@ -51,7 +52,7 @@ where
                 signature.s.into(),
                 attribute,
                 value.into(),
-                U256::from(1),
+                validity,
             )
             .send()
             .await?

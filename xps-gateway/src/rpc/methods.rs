@@ -12,6 +12,7 @@ use gateway_types::GrantInstallationResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use rand::{rngs::StdRng, SeedableRng};
+use std::sync::Arc;
 use thiserror::Error;
 
 use gateway_types::Message;
@@ -21,6 +22,7 @@ use registry::{error::ContactOperationError, ContactOperations};
 pub struct XpsMethods<P: Middleware + 'static> {
     contact_operations: ContactOperations<GatewaySigner<P>>,
     pub wallet: LocalWallet,
+    pub signer: Arc<GatewaySigner<P>>,
 }
 
 impl<P: Middleware> XpsMethods<P> {
@@ -28,6 +30,7 @@ impl<P: Middleware> XpsMethods<P> {
         Self {
             contact_operations: ContactOperations::new(context.registry.clone()),
             wallet: LocalWallet::new(&mut StdRng::from_entropy()),
+            signer: context.signer.clone(),
         }
     }
 }
@@ -52,10 +55,14 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         value: Vec<u8>,
         signature: Signature,
     ) -> Result<GrantInstallationResult, ErrorObjectOwned> {
-        log::debug!("xps_revokeInstallation called");
+        log::debug!("xps_grantInstallation called");
+        let block_number = self.signer.get_block_number().await.unwrap();
+        let validity_period: U64 = U64::from(60 * 60 * 24 * 365 / 5); // number of round in one year, assuming 5-second round.
+        let validity = block_number + validity_period;
+
         let result = self
             .contact_operations
-            .grant_installation(did, name, value, signature)
+            .grant_installation(did, name, value, signature, U256::from(validity.as_u64()))
             .await
             .map_err(RpcError::from)?;
 
