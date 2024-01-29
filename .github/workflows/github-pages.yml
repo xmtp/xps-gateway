@@ -34,7 +34,7 @@ jobs:
         env:
           CARGO_INCREMENTAL: 0
         run: |
-          cargo test --docs
+          cargo test --doc
           cargo test --lib
         id: test
       - name: Invoke cargo doc

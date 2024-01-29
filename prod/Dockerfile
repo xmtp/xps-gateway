@@ -16,7 +16,8 @@ ENV USER=xmtp
 RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps -- -D warnings
-RUN cargo test
+RUN cargo test --lib
+RUN cargo test --doc
 RUN cargo build --release
 RUN CARGO_TARGET_DIR=/build/target cargo install --root /xmtp --path xps-gateway --bin=xps_gateway
 RUN strip /xmtp/bin/xps_gateway
