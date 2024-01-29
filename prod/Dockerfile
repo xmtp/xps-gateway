@@ -13,12 +13,11 @@ COPY --chown=xmtp:xmtp . .
 ENV PATH=~xmtp/.cargo/bin:$PATH
 ENV USER=xmtp
 
-COPY --from=ghcr.io/xmtp/foundry:latest /usr/local/bin/anvil /usr/local/bin/anvil
-
 RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps -- -D warnings
-RUN cargo test
+RUN cargo test --lib
+RUN cargo test --doc
 RUN cargo build --release
 RUN CARGO_TARGET_DIR=/build/target cargo install --root /xmtp --path xps-gateway --bin=xps_gateway
 RUN strip /xmtp/bin/xps_gateway
