@@ -8,6 +8,7 @@ use jsonrpsee::types::error::ErrorCode;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::{core::types::Signature, providers::Middleware};
+use gateway_types::GrantInstallationResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use rand::{rngs::StdRng, SeedableRng};
@@ -42,6 +43,23 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
     async fn status(&self) -> Result<String, ErrorObjectOwned> {
         log::debug!("xps_status called");
         Ok("OK".to_string())
+    }
+
+    async fn grant_installation(
+        &self,
+        did: String,
+        name: XmtpAttribute,
+        value: Vec<u8>,
+        signature: Signature,
+    ) -> Result<GrantInstallationResult, ErrorObjectOwned> {
+        log::debug!("xps_revokeInstallation called");
+        let result = self
+            .contact_operations
+            .grant_installation(did, name, value, signature)
+            .await
+            .map_err(RpcError::from)?;
+
+        Ok(result)
     }
 
     async fn revoke_installation(

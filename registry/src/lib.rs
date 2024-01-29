@@ -2,13 +2,14 @@ pub mod error;
 
 use std::str::FromStr;
 
+use error::ContactOperationError;
+use ethers::types::U256;
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
+use gateway_types::GrantInstallationResult;
 use lib_didethresolver::{
     did_registry::DIDRegistry,
     types::{Attribute, XmtpAttribute},
 };
-
-use error::ContactOperationError;
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,
@@ -21,6 +22,45 @@ where
     /// Creates a new ContactOperations instance
     pub fn new(registry: DIDRegistry<M>) -> Self {
         Self { registry }
+    }
+
+    pub async fn grant_installation(
+        &self,
+        did: String,
+        name: XmtpAttribute,
+        value: Vec<u8>,
+        signature: Signature,
+    ) -> Result<GrantInstallationResult, ContactOperationError<M>> {
+        // for now, we will just assume the DID is a valid ethereum wallet address
+        // TODO: Parse or resolve the actual DID
+        // Note that it should be refactored along with revoke_installation that uses the very
+        // same logic.
+        let address = Address::from_str(&did)?;
+        let attribute: [u8; 32] = Attribute::from(name).into();
+        log::debug!(
+            "setting attribute {:#?}",
+            String::from_utf8_lossy(&attribute)
+        );
+
+        let transaction_receipt = self
+            .registry
+            .set_attribute_signed(
+                address,
+                signature.v.try_into()?,
+                signature.r.into(),
+                signature.s.into(),
+                attribute,
+                value.into(),
+                U256::from(1),
+            )
+            .send()
+            .await?
+            .await?;
+        Ok(GrantInstallationResult {
+            status: "completed".to_string(),
+            message: "Installation request complete.".to_string(),
+            transaction: transaction_receipt.unwrap().transaction_hash.to_string(),
+        })
     }
 
     pub async fn revoke_installation(

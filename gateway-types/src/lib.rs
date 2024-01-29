@@ -20,3 +20,24 @@ pub struct Message {
     /// Signature of S
     pub s: Vec<u8>,
 }
+
+/// GrantInstallationResult represents the result of a grant installation operation in the DID registry.
+///
+/// This struct encapsulates the outcome of an attempt to grant an installation,
+/// providing details about the operation's status, a descriptive message, and the
+/// transaction identifier associated with the blockchain transaction.
+///
+/// # Fields
+/// * `status` - A `String` indicating the outcome status of the operation. Typically, this
+///   would be values like "Success" or "Failure".
+/// * `message` - A `String` providing more detailed information about the operation. This
+///   can be a success message, error description, or any other relevant information.
+/// * `transaction` - A `String` representing the unique identifier of the transaction on the
+///   blockchain. This can be used to track the transaction in a blockchain explorer.
+///
+#[derive(Serialize, Deserialize, Clone)]
+pub struct GrantInstallationResult {
+    pub status: String,
+    pub message: String,
+    pub transaction: String,
+}
