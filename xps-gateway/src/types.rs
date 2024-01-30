@@ -21,21 +21,25 @@ impl<P: Middleware + 'static> GatewayContext<P> {
         let signer =
             Arc::new(SignerMiddleware::new_with_provider_chain(provider, wallet.clone()).await?);
         let registry = DIDRegistry::new(registry, signer.clone());
-        Ok(Self { registry, signer, wallet })
+        Ok(Self {
+            registry,
+            signer,
+            wallet,
+        })
     }
-
 }
 
 #[cfg(test)]
 mod tests {
-    use ethers::{providers::Provider, types::U64, prelude::MockProvider};
+    use ethers::{prelude::MockProvider, providers::Provider, types::U64};
     use std::str::FromStr;
 
     use super::*;
 
     impl GatewayContext<Provider<MockProvider>> {
         pub async fn mocked() -> (Self, MockProvider) {
-            let (provider, mock) = Provider::mocked();
+            let (mut provider, mock) = Provider::mocked();
+            provider.set_interval(std::time::Duration::from_millis(1));
             mock.push(U64::from(2)).unwrap();
 
             let gateway = GatewayContext::new(

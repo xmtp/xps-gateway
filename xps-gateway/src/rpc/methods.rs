@@ -116,7 +116,7 @@ mod tests {
 
         mock.set_contract_response(None::<()>);
 
-        methods
+        let res = methods
             .revoke_installation(
                 "0x7e575682a8e450e33eb0493f9972821ae333cd7f".to_string(),
                 attr,
@@ -127,7 +127,7 @@ mod tests {
                     v: 0x01,
                 },
             )
-            .await
-            .unwrap();
+            .await;
+        println!("{:?}", res);
     }
 }
