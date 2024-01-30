@@ -1,14 +1,39 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+pub mod error;
+
+use error::MessagingOperationError;
+use ethers::contract::abigen;
+use ethers::core::types::Bytes;
+use ethers::providers::Middleware;
+
+abigen!(
+    Conversation,
+    "./abi/Conversation.json",
+    derives(serde::Serialize, serde::Deserialize)
+);
+
+pub struct MessagingOperations<Middleware> {
+    messaging: Conversation<Middleware>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl<M> MessagingOperations<M>
+where
+    M: Middleware + 'static,
+{
+    /// Creates a new MessagingOperations instance
+    pub fn new(messaging: Conversation<M>) -> Self {
+        Self { messaging }
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub async fn send_message(
+        &self,
+        conversation_id: [u8; 32],
+        payload: Bytes,
+    ) -> Result<(), MessagingOperationError<M>> {
+        self.messaging
+            .send_message(conversation_id, payload)
+            .send()
+            .await?
+            .await?;
+        Ok(())
     }
 }

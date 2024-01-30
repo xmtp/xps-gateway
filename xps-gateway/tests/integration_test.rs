@@ -2,7 +2,7 @@ mod integration_util;
 
 use anyhow::Error;
 
-use ethers::signers::LocalWallet;
+use ethers::{signers::LocalWallet, types::Bytes};
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
     types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose},
@@ -26,17 +26,14 @@ async fn test_say_hello() -> Result<(), Error> {
 }
 
 #[tokio::test]
-async fn test_fail_send_message() -> Result<(), Error> {
+async fn test_send_message() -> Result<(), Error> {
     with_xps_client(None, |client, _, _, _| async move {
         let message = Message {
-            conversation_id: (b"abcdefg").to_vec(),
-            payload: (b"Hello World").to_vec(),
-            v: vec![],
-            r: vec![],
-            s: vec![],
+            conversation_id: [0; 32],
+            payload: Bytes::from_static(b"payload"),
         };
         let result = client.send_message(message).await;
-        assert!(result.is_err());
+        assert!(!result.is_err());
         Ok(())
     })
     .await
