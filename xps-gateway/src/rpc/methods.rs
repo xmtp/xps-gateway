@@ -84,15 +84,15 @@ impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
 
 #[cfg(test)]
 mod tests {
-    use lib_didethresolver::types::{KeyEncoding, XmtpKeyPurpose};
     use crate::test::MockProviderExt;
+    use lib_didethresolver::types::{KeyEncoding, XmtpKeyPurpose};
 
     use super::*;
-    
+
     fn type_of<T>(_: T) -> &'static str {
         std::any::type_name::<T>()
     }
-    
+
     #[tokio::test]
     async fn test_rpc_wallet_address() {
         let (context, _) = GatewayContext::mocked().await;
@@ -113,8 +113,8 @@ mod tests {
             purpose: XmtpKeyPurpose::Installation,
         };
         let value = vec![0x01, 0x02, 0x03];
-        
-        mock.set_transaction_response(None::<()>);
+
+        mock.set_contract_response(None::<()>);
 
         methods
             .revoke_installation(
@@ -127,8 +127,7 @@ mod tests {
                     v: 0x01,
                 },
             )
-            .await.unwrap();
-
+            .await
+            .unwrap();
     }
 }
-
