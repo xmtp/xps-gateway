@@ -11,6 +11,7 @@ use ethers::{core::types::Signature, providers::Middleware};
 use gateway_types::GrantInstallationResult;
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
+
 use rand::{rngs::StdRng, SeedableRng};
 use std::sync::Arc;
 use thiserror::Error;
@@ -100,6 +101,7 @@ enum RpcError<M: Middleware> {
 
 impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
     fn from(error: RpcError<M>) -> Self {
+        println!("{:?}", error);
         match error {
             RpcError::ContactOperation(c) => {
                 ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
@@ -111,6 +113,7 @@ impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
 #[cfg(test)]
 mod tests {
     use crate::test::MockProviderExt;
+    use ethers::providers::MockResponse;
     use lib_didethresolver::types::{KeyEncoding, XmtpKeyPurpose};
 
     use super::*;
@@ -140,7 +143,40 @@ mod tests {
         };
         let value = vec![0x01, 0x02, 0x03];
 
-        mock.set_contract_response(None::<()>);
+        mock.set_contract_response(Default::default());
+
+        let res = methods
+            .revoke_installation(
+                "0x7e575682a8e450e33eb0493f9972821ae333cd7f".to_string(),
+                attr,
+                value,
+                Signature {
+                    r: [0x01; 32].into(),
+                    s: [0x02; 32].into(),
+                    v: 0x01,
+                },
+            )
+            .await;
+        assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_rpc_revoke_installation_error() {
+        let (context, mut mock) = GatewayContext::mocked().await;
+
+        let methods = XpsMethods::new(&context);
+
+        let attr = XmtpAttribute {
+            encoding: KeyEncoding::Hex,
+            purpose: XmtpKeyPurpose::Installation,
+        };
+        let value = vec![0x01, 0x02, 0x03];
+
+        mock.push_response(MockResponse::Error(JsonRpcError {
+            code: -32000,
+            message: "VM Exception while processing transaction: revert".to_string(),
+            data: None,
+        }));
 
         let res = methods
             .revoke_installation(

@@ -81,18 +81,18 @@ where
             String::from_utf8_lossy(&attribute)
         );
 
-        self.registry
-            .revoke_attribute_signed(
-                address,
-                signature.v.try_into()?,
-                signature.r.into(),
-                signature.s.into(),
-                attribute,
-                value.into(),
-            )
-            .send()
-            .await?
-            .await?;
+        let res = self.registry.revoke_attribute_signed(
+            address,
+            signature.v.try_into()?,
+            signature.r.into(),
+            signature.s.into(),
+            attribute,
+            value.into(),
+        );
+
+        let res = res.send().await;
+        println!("{:?}", res);
+        res?.await?;
 
         Ok(())
     }

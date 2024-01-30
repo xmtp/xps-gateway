@@ -32,7 +32,6 @@ impl<P: Middleware + 'static> GatewayContext<P> {
 #[cfg(test)]
 mod tests {
     use ethers::{prelude::MockProvider, providers::Provider, types::U64};
-    use std::str::FromStr;
 
     use super::*;
 
@@ -42,12 +41,9 @@ mod tests {
             provider.set_interval(std::time::Duration::from_millis(1));
             mock.push(U64::from(2)).unwrap();
 
-            let gateway = GatewayContext::new(
-                Address::from_str("0x0000000000000000000000000000000000000000").unwrap(),
-                provider,
-            )
-            .await
-            .unwrap();
+            let gateway = GatewayContext::new(Address::default(), provider)
+                .await
+                .unwrap();
 
             (gateway, mock)
         }
@@ -58,12 +54,9 @@ mod tests {
         let (provider, mock) = Provider::mocked();
         mock.push(U64::from(2)).unwrap();
 
-        let gateway = GatewayContext::new(
-            Address::from_str("0x0000000000000000000000000000000000000000").unwrap(),
-            provider,
-        )
-        .await
-        .unwrap();
+        let gateway = GatewayContext::new(Address::default(), provider)
+            .await
+            .unwrap();
 
         assert!(gateway.registry.address().is_zero());
         assert!(gateway.signer.is_signer().await);

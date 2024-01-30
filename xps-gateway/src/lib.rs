@@ -43,28 +43,17 @@ pub async fn run(host: String, port: u16) -> Result<()> {
 #[cfg(test)]
 mod test {
     use ethers::{
+        abi::AbiEncode,
         prelude::{Transaction, TransactionReceipt},
         providers::MockProvider,
         types::{Block, FeeHistory, TxHash, U256, U64},
     };
     use serde::Serialize;
-    use std::borrow::Borrow;
-
-    fn setup_mock_tx(mock: &mut MockProvider) {
-        mock.push(TransactionReceipt::default()).unwrap(); // eth_getTransactionReceipt
-        mock.push(Transaction {
-            block_number: Some(1.into()),
-            ..Transaction::default()
-        })
-        .unwrap(); // eth_getTransaction
-        mock.push(TxHash::default()).unwrap(); // eth_sendTransaction
-        mock.push(U64::from(0)).unwrap(); // eth_estimateGas
-        mock.push(U64::from(0)).unwrap(); // eth_GasPrice
-    }
 
     pub trait MockProviderExt {
         /// Set the response for a call to a contract
         /// This must be called for each transaction that a function might send.
+        ///
         ///
         /// # Example
         /// ```
@@ -81,45 +70,69 @@ mod test {
         /// let to = Address::from_str("0x7e575682a8e450e33eb0493f9972821ae333cd7f").unwrap();
         /// let from = Address::from_str("0x0000000000000000000000000000000000000000").unwrap();
         /// let tx = TransactionRequest::new().to(to).value(1000).from(from);
-        /// mock.set_transaction_response(None::<()>);
+        /// mock.set_transaction_response(TransactionReceipt::default());
         /// let pending = provider.send_transaction(tx, None).await.unwrap().await.unwrap();
         /// ```
-        fn set_transaction_response<T: Serialize + Send + Sync, R: Borrow<T>>(
-            &mut self,
-            response: Option<R>,
-        );
+        fn set_transaction_response(&mut self, response: TransactionReceipt);
 
         /// Set the response for a transaction to a Contract
-        fn set_contract_response<T: Serialize + Send + Sync, R: Borrow<T>>(
-            &mut self,
-            response: Option<R>,
-        );
+        ///
+        /// # Example
+        /// ```
+        ///  
+        /// let (context, mut mock) = GatewayContext::mocked().await;
+        /// let methods = XpsMethods::new(&context);
+        /// let attr = XmtpAttribute {
+        ///     encoding: KeyEncoding::Hex,
+        ///     purpose: XmtpKeyPurpose::Installation,
+        /// };
+        /// let value = vec![0x01, 0x02, 0x03];
+        /// mock.set_contract_response(Default::default());
+        /// let res = methods
+        ///     .revoke_installation(
+        ///         Address::default().to_string(),
+        ///         attr,
+        ///         value,
+        ///         Signature {
+        ///             r: [0x01; 32].into(),
+        ///             s: [0x02; 32].into(),
+        ///             v: 0x01,
+        ///         },
+        ///     )
+        ///     .await;
+        /// ```
+        fn set_contract_response(&mut self, response: TransactionReceipt);
 
         /// Set the response for a call to a contract
-        fn set_call_response<T: Serialize + Send + Sync, R: Borrow<T>>(
-            &mut self,
-            response: Option<R>,
-        ) {
-            todo!()
-        }
+        ///
+        /// # Example
+        ///
+        /// ```
+        /// let (context, mut mock) = GatewayContext::mocked().await;
+        /// let registry = DIDRegistry::new(Address::default(), context.signer.clone());
+        /// mock.set_call_response(ChangedReturn(U256::zero()));
+        /// registry.changed(Address::default()).call().await.unwrap();
+        ///
+        /// ```
+        ///
+        fn set_call_response<T: Serialize + Send + Sync + AbiEncode>(&mut self, response: T);
     }
 
     impl MockProviderExt for MockProvider {
-        fn set_transaction_response<T: Serialize + Send + Sync, R: Borrow<T>>(
-            &mut self,
-            response: Option<R>,
-        ) {
-            if let Some(r) = response {
-                self.push(r).unwrap();
-            }
-            setup_mock_tx(self);
+        fn set_transaction_response(&mut self, response: TransactionReceipt) {
+            self.push(response).unwrap();
+            self.push(Transaction {
+                block_number: Some(1.into()),
+                ..Transaction::default()
+            })
+            .unwrap(); // eth_getTransaction
+            self.push(TxHash::default()).unwrap(); // eth_sendTransaction
+            self.push(U64::from(0)).unwrap(); // eth_estimateGas
+            self.push(U64::from(0)).unwrap(); // eth_GasPrice
         }
 
-        fn set_contract_response<T: Serialize + Send + Sync, R: Borrow<T>>(
-            &mut self,
-            response: Option<R>,
-        ) {
-            self.push(TransactionReceipt::default()).unwrap(); // eth_getTransactionReceipt
+        fn set_contract_response(&mut self, response: TransactionReceipt) {
+            self.push(response).unwrap();
             self.push(Transaction {
                 block_number: Some(1.into()),
                 ..Transaction::default()
@@ -138,11 +151,9 @@ mod test {
             self.push(U64::from(0)).unwrap(); // transactionCount
         }
 
-        fn set_call_response<T: Serialize + Send + Sync, R: Borrow<T>>(
-            &mut self,
-            response: Option<R>,
-        ) {
-            todo!()
+        fn set_call_response<T: Serialize + Send + Sync + AbiEncode>(&mut self, response: T) {
+            self.push::<String, &String>(&response.encode_hex())
+                .unwrap();
         }
     }
 

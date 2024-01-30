@@ -25,9 +25,13 @@ async-trait = "0.1"
 jsonrpsee = { version = "0.21", features = ["macros", "server", "client-core"] }
 anyhow = "1.0"
 thiserror = "1.0"
-ethers = { version = "2.0.11", features = ["abigen"] }
+ethers = { path = "../../../../gakonst/ethers-rs/ethers", features = ["abigen"] }
 ctor = "0.2"
 lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", package = "lib-didethresolver", branch = "main" }
 gateway-types = { path = "./gateway-types" }
 rustc-hex = "2.1"
 hex = "0.4"
+
+[patch.crates-io]
+ethers = { path = "../../../../gakonst/ethers-rs/ethers", features = ["abigen"] }
+
