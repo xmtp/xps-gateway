@@ -18,6 +18,10 @@ use thiserror::Error;
 use gateway_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
 
+// DEFAULT_ATTRIBUTE_VALIDITY is the hard-coded value we use for the validity of the attributes we set.
+// This value is interpeted as number of seconds startring the block where the attribute is being set.
+pub const DEFAULT_ATTRIBUTE_VALIDITY: u64 = 60 * 60 * 24 * 365;
+
 /// Gateway Methods for XPS
 pub struct XpsMethods<P: Middleware + 'static> {
     contact_operations: ContactOperations<GatewaySigner<P>>,
@@ -56,13 +60,16 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         signature: Signature,
     ) -> Result<GrantInstallationResult, ErrorObjectOwned> {
         log::debug!("xps_grantInstallation called");
-        let block_number = self.signer.get_block_number().await.unwrap();
-        let validity_period: U64 = U64::from(60 * 60 * 24 * 365 / 5); // number of round in one year, assuming 5-second round.
-        let validity = block_number + validity_period;
 
         let result = self
             .contact_operations
-            .grant_installation(did, name, value, signature, U256::from(validity.as_u64()))
+            .grant_installation(
+                did,
+                name,
+                value,
+                signature,
+                U256::from(DEFAULT_ATTRIBUTE_VALIDITY),
+            )
             .await
             .map_err(RpcError::from)?;
 
