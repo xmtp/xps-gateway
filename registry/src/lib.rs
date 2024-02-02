@@ -5,7 +5,9 @@ use std::str::FromStr;
 use error::ContactOperationError;
 use ethers::types::{H160, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
-use gateway_types::GrantInstallationResult;
+use gateway_types::{GrantInstallationResult, KeyPackageResult, Status};
+use lib_didethresolver::types::VerificationMethodProperties;
+use lib_didethresolver::Resolver;
 use lib_didethresolver::{
     did_registry::DIDRegistry,
     types::{Attribute, XmtpAttribute},
@@ -13,6 +15,7 @@ use lib_didethresolver::{
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,
+    resolver: Resolver<Middleware>,
 }
 
 impl<M> ContactOperations<M>
@@ -21,7 +24,8 @@ where
 {
     /// Creates a new ContactOperations instance
     pub fn new(registry: DIDRegistry<M>) -> Self {
-        Self { registry }
+        let resolver = registry.clone().into();
+        Self { registry, resolver }
     }
 
     fn resolve_did_address(&self, did: String) -> Result<H160, ContactOperationError<M>> {
@@ -29,6 +33,37 @@ where
         // TODO: Parse or resolve the actual DID
         let address = Address::from_str(&did)?;
         Ok(address)
+    }
+
+    pub async fn fetch_key_packages(
+        &self,
+        did: String,
+    ) -> Result<KeyPackageResult, ContactOperationError<M>> {
+        let address = Address::from_str(&did)?;
+
+        let resolution = self
+            .resolver
+            .resolve_did(address, None)
+            .await
+            .map_err(|e| ContactOperationError::ResolutionError(e, did))?;
+
+        if resolution.metadata.deactivated {
+            return Err(ContactOperationError::DIDDeactivated);
+        }
+
+        let document = resolution.document;
+        /*
+        let properties = document
+            .verification_method
+            .iter()
+            .filter_map(|method| method.id.fragment().filter(|f| f.starts_with("xmtp-")))
+            .collect::<Option<VerificationMethodProperties>>();
+        */
+        Ok(KeyPackageResult {
+            status: Status::Completed,
+            message: "Key packages retrieved".to_string(),
+            key_packages: Vec::new(),
+        })
     }
 
     pub async fn grant_installation(
@@ -61,7 +96,7 @@ where
             .await?
             .await?;
         Ok(GrantInstallationResult {
-            status: "completed".to_string(),
+            status: Status::Completed,
             message: "Installation request complete.".to_string(),
             transaction: transaction_receipt.unwrap().transaction_hash.to_string(),
         })

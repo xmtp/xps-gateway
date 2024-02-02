@@ -1,5 +1,7 @@
 //! Shared types between XPS Gateawy and client (libxmtp)
 
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
 /// Address of the did:ethr Registry on Sepolia
@@ -21,6 +23,8 @@ pub struct Message {
     pub s: Vec<u8>,
 }
 
+pub type Bytes = Vec<u8>;
+
 /// GrantInstallationResult represents the result of a grant installation operation in the DID registry.
 ///
 /// This struct encapsulates the outcome of an attempt to grant an installation,
@@ -28,8 +32,8 @@ pub struct Message {
 /// transaction identifier associated with the blockchain transaction.
 ///
 /// # Fields
-/// * `status` - A `String` indicating the outcome status of the operation. Typically, this
-///   would be values like "Success" or "Failure".
+/// * `status` - One of [`Status::Completed`] or [`Status::Failed`], indicating the outcome of the
+/// operation.
 /// * `message` - A `String` providing more detailed information about the operation. This
 ///   can be a success message, error description, or any other relevant information.
 /// * `transaction` - A `String` representing the unique identifier of the transaction on the
@@ -37,7 +41,32 @@ pub struct Message {
 ///
 #[derive(Serialize, Deserialize, Clone)]
 pub struct GrantInstallationResult {
-    pub status: String,
+    pub status: Status,
     pub message: String,
     pub transaction: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct KeyPackageResult {
+    /// Status of the operation
+    pub status: Status,
+    /// A message relating to the operation
+    pub message: String,
+    /// A list of key packages
+    pub key_packages: Vec<Bytes>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum Status {
+    Completed,
+    Failed,
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Status::Completed => write!(f, "completed"),
+            Status::Failed => write!(f, "failed"),
+        }
+    }
 }
