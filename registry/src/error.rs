@@ -22,4 +22,6 @@ pub enum ContactOperationError<M: Middleware> {
     ResolutionError(lib_didethresolver::error::ResolverError<M>, String),
     #[error("The DID has been deactivated, and no longer valid")]
     DIDDeactivated,
+    #[error("Type failed to convert")]
+    Type(#[from] lib_didethresolver::error::TypeError),
 }

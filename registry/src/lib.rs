@@ -8,10 +8,7 @@ use ethers::{core::types::Signature, providers::Middleware, types::Address};
 use gateway_types::{GrantInstallationResult, KeyPackageResult, Status};
 use lib_didethresolver::types::VerificationMethodProperties;
 use lib_didethresolver::Resolver;
-use lib_didethresolver::{
-    did_registry::DIDRegistry,
-    types::{Attribute, XmtpAttribute},
-};
+use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,
@@ -52,17 +49,30 @@ where
         }
 
         let document = resolution.document;
-        /*
+
         let properties = document
             .verification_method
-            .iter()
-            .filter_map(|method| method.id.fragment().filter(|f| f.starts_with("xmtp-")))
-            .collect::<Option<VerificationMethodProperties>>();
-        */
+            .into_iter()
+            .filter(|method| {
+                method
+                    .id
+                    .fragment()
+                    .map(|f| f.starts_with("xmtp-"))
+                    .unwrap_or(false)
+                    && method
+                        .id
+                        .contains_query("meta".into(), "installation".into())
+            })
+            .filter_map(|method| method.verification_properties)
+            .collect::<Vec<VerificationMethodProperties>>();
+
         Ok(KeyPackageResult {
             status: Status::Completed,
             message: "Key packages retrieved".to_string(),
-            key_packages: Vec::new(),
+            key_packages: properties
+                .into_iter()
+                .map(TryFrom::try_from)
+                .collect::<Result<_, _>>()?,
         })
     }
 
@@ -75,7 +85,7 @@ where
         validity: U256,
     ) -> Result<GrantInstallationResult, ContactOperationError<M>> {
         let address = self.resolve_did_address(did)?;
-        let attribute: [u8; 32] = Attribute::from(name).into();
+        let attribute: [u8; 32] = name.into();
         log::debug!(
             "setting attribute {:#?}",
             String::from_utf8_lossy(&attribute)
@@ -110,7 +120,7 @@ where
         signature: Signature,
     ) -> Result<(), ContactOperationError<M>> {
         let address = self.resolve_did_address(did)?;
-        let attribute: [u8; 32] = Attribute::from(name).into();
+        let attribute: [u8; 32] = name.into();
         log::debug!(
             "Revoking attribute {:#?}",
             String::from_utf8_lossy(&attribute)

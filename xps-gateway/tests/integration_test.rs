@@ -2,7 +2,8 @@ mod integration_util;
 
 use anyhow::Error;
 
-use ethers::signers::LocalWallet;
+use ethers::{signers::LocalWallet, signers::Signer};
+
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
     types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose},
@@ -11,7 +12,7 @@ use xps_gateway::rpc::XpsClient;
 
 use ethers::middleware::Middleware;
 use ethers::types::{Address, U256, U64};
-use gateway_types::Message;
+use gateway_types::{Message, Status};
 
 use integration_util::*;
 
@@ -118,25 +119,11 @@ async fn test_grant_installation() -> Result<(), Error> {
 #[tokio::test]
 async fn test_revoke_installation() -> Result<(), Error> {
     with_xps_client(None, |client, context, resolver, anvil| async move {
-        let wallet: LocalWallet = anvil.keys()[3].clone().into();
-        let me = get_user(&anvil, 3).await;
+        let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
         let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
-        let validity = U256::from(604_800);
-        let signature = wallet
-            .sign_attribute(&context.registry, name, value.to_vec(), validity)
-            .await?;
 
-        let attr = context.registry.set_attribute_signed(
-            me.address(),
-            signature.v.try_into().unwrap(),
-            signature.r.into(),
-            signature.s.into(),
-            name,
-            value.into(),
-            validity,
-        );
-        attr.send().await?.await?;
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
 
         let doc = resolver
             .resolve_did(me.address(), None)
@@ -152,7 +139,7 @@ async fn test_revoke_installation() -> Result<(), Error> {
             .unwrap()
         );
 
-        let signature = wallet
+        let signature = me
             .sign_revoke_attribute(&context.registry, name, value.to_vec())
             .await?;
 
@@ -187,6 +174,119 @@ async fn test_revoke_installation() -> Result<(), Error> {
             .unwrap()
         );
         assert_eq!(doc.verification_method.len(), 1);
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_fetch_key_packages() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+        let name = *b"xmtp/installation/hex           ";
+        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await?;
+
+        assert_eq!(res.status, Status::Completed);
+        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(
+            res.key_packages,
+            vec![
+                b"000000000000000000000000000000000000000000000000000000000000000000",
+                b"111111111111111111111111111111111111111111111111111111111111111111"
+            ]
+        );
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+        let name = *b"xmtp/installation/hex           ";
+        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        client
+            .revoke_installation(
+                format!("0x{}", hex::encode(me.address())),
+                XmtpAttribute {
+                    purpose: XmtpKeyPurpose::Installation,
+                    encoding: KeyEncoding::Hex,
+                },
+                value.to_vec(),
+                me.sign_revoke_attribute(&context.registry, name, value.to_vec())
+                    .await?,
+            )
+            .await?;
+
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await?;
+
+        assert_eq!(res.status, Status::Completed);
+        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(
+            res.key_packages,
+            vec![hex::decode(
+                b"000000000000000000000000000000000000000000000000000000000000000000"
+            )
+            .unwrap()]
+        );
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_fetch_key_packages_client() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+        let attribute = XmtpAttribute {
+            purpose: XmtpKeyPurpose::Installation,
+            encoding: KeyEncoding::Hex,
+        };
+        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+
+        client
+            .grant_installation(
+                format!("0x{}", hex::encode(me.address())),
+                attribute.clone(),
+                value.to_vec(),
+                me.sign_attribute(
+                    &context.registry,
+                    attribute.into(),
+                    value.to_vec(),
+                    U256::from(604_800),
+                )
+                .await?,
+            )
+            .await?;
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await?;
+
+        assert_eq!(res.status, Status::Completed);
+        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(
+            res.key_packages,
+            vec![b"000000000000000000000000000000000000000000000000000000000000000000"]
+        );
 
         Ok(())
     })

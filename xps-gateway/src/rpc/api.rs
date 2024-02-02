@@ -4,8 +4,8 @@ use ethers::core::types::Signature;
 use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::GrantInstallationResult;
 use gateway_types::Message;
+use gateway_types::{GrantInstallationResult, KeyPackageResult};
 use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods
@@ -222,6 +222,9 @@ pub trait Xps {
         signature: Signature,
     ) -> Result<(), ErrorObjectOwned>;
 
+    #[method(name = "fetchKeyPackages")]
+    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned>;
+
     /// # Documentation for JSON RPC Endpoint: `status`
 
     /// ## Overview
@@ -304,7 +307,7 @@ pub trait Xps {
     /// $ $ curl -H "Content-Type: application/json" -d '{"id":7000, "jsonrpc":"2.0", "method":"xps_status"}' http:///localhost:34695
     /// {"jsonrpc":"2.0","result":"OK","id":7000}
     /// ```
-
+    ///
     /// ### Notes
     /// - The system should have proper error handling to deal with invalid requests, unauthorized access, and other potential issues.
     #[method(name = "status")]

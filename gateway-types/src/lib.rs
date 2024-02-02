@@ -39,14 +39,14 @@ pub type Bytes = Vec<u8>;
 /// * `transaction` - A `String` representing the unique identifier of the transaction on the
 ///   blockchain. This can be used to track the transaction in a blockchain explorer.
 ///
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct GrantInstallationResult {
     pub status: Status,
     pub message: String,
     pub transaction: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct KeyPackageResult {
     /// Status of the operation
     pub status: Status,
@@ -56,7 +56,7 @@ pub struct KeyPackageResult {
     pub key_packages: Vec<Bytes>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum Status {
     Completed,
     Failed,
