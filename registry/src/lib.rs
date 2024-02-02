@@ -69,7 +69,7 @@ where
         Ok(KeyPackageResult {
             status: Status::Completed,
             message: "Key packages retrieved".to_string(),
-            key_packages: properties
+            installation: properties
                 .into_iter()
                 .map(TryFrom::try_from)
                 .collect::<Result<_, _>>()?,

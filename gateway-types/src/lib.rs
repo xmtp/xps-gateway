@@ -53,7 +53,7 @@ pub struct KeyPackageResult {
     /// A message relating to the operation
     pub message: String,
     /// A list of key packages
-    pub key_packages: Vec<Bytes>,
+    pub installation: Vec<Bytes>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

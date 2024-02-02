@@ -198,7 +198,7 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
         assert_eq!(res.status, Status::Completed);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
-            res.key_packages,
+            res.installation,
             vec![
                 b"000000000000000000000000000000000000000000000000000000000000000000",
                 b"111111111111111111111111111111111111111111111111111111111111111111"
@@ -241,7 +241,7 @@ async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
         assert_eq!(res.status, Status::Completed);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
-            res.key_packages,
+            res.installation,
             vec![hex::decode(
                 b"000000000000000000000000000000000000000000000000000000000000000000"
             )
@@ -284,7 +284,7 @@ async fn test_fetch_key_packages_client() -> Result<(), Error> {
         assert_eq!(res.status, Status::Completed);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
-            res.key_packages,
+            res.installation,
             vec![b"000000000000000000000000000000000000000000000000000000000000000000"]
         );
 
