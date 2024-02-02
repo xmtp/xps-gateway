@@ -19,7 +19,7 @@ use gateway_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
 
 // DEFAULT_ATTRIBUTE_VALIDITY is the hard-coded value we use for the validity of the attributes we set.
-// This value is interpeted as number of seconds startring the block where the attribute is being set.
+// This value is interpeted as number of seconds starting from the block where the attribute is being set.
 pub const DEFAULT_ATTRIBUTE_VALIDITY: u64 = 60 * 60 * 24 * 365;
 
 /// Gateway Methods for XPS
