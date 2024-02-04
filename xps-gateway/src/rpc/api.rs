@@ -11,7 +11,125 @@ use lib_didethresolver::types::XmtpAttribute;
 /// XPS JSON-RPC Interface Methods
 #[rpc(server, client, namespace = "xps")]
 pub trait Xps {
-    /// Send message using gateway's signer
+    /// # Documentation for JSON RPC Endpoint: `sendGroupMessage`
+    ///
+    /// ## Overview
+    ///
+    /// The `sendGroupMessage` method is used to send a message within a specified conversation. It is an external function that is part of a larger system managing communications between users or entities. This method requires two parameters: a unique identifier for the conversation (`conversationId`) and the message content (`payload`).
+    ///
+    /// ## JSON RPC Endpoint Specification
+    ///
+    /// ### Request:
+    ///
+    /// - **Method:** `POST`
+    /// - **URL:** `/rpc/v1/sendGroupMessage`
+    /// - **Headers:**
+    ///   - `Content-Type: application/json`
+    /// - **Body:**
+    ///   - **JSON Object:**
+    ///     - `jsonrpc`: `"2.0"`
+    ///     - `method`: `"sendGroupMessage"`
+    ///     - `params`: Array (optional parameters as required)
+    ///     - `id`: Request identifier (integer or string)
+    ///
+    /// ### Method Name
+    /// `sendGroupMessage`
+    ///
+    /// ### Request Parameters
+    /// 1. `conversationId`: A unique identifier for the conversation. This is a 32-byte string, typically in hexadecimal format.
+    /// 2. `payload`: The content of the message. This is a variable-length byte array that can hold any form of data, such as text, images, or other binary formats.
+    /// 3. `identity`: Message sender address.
+    /// 4. `sigV`: The signature V
+    /// 5. `sigR`: The signature R
+    /// 6. `sigS`: The signature S
+    ///
+    /// ### Request Format
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "method": "sendGroupMessage",
+    ///   "params": {
+    ///     "conversationId": "<conversationId>",
+    ///     "payload": "<payload>",
+    ///     "identity": "<identity>",
+    ///      "V": "<V>",
+    ///      "R": "<R>",
+    ///      "S": "<S>"
+    ///   },
+    ///   "id": 1
+    /// }
+    /// ```
+    ///
+    /// - `jsonrpc`: Specifies the version of the JSON RPC protocol being used. Always "2.0".
+    /// - `method`: The name of the method being called. Here it is "sendMessage".
+    /// - `params`: A structured value holding the parameters necessary for the method. It contains:
+    ///   - `conversationId`: The unique identifier for the conversation.
+    ///   - `payload`: The message content in bytes.
+    ///   - `identity`: The identity of the sender.
+    ///   - `V`: The signature V
+    ///   - `R`: The signature R
+    ///   - `S`: The signature S
+    /// - `id`: A unique identifier established by the client that must be number or string. Used for correlating the response with the request.
+    ///
+    /// ### Response Format
+    /// The response will typically include the result of the operation or an error if the operation was unsuccessful.
+    ///
+    /// #### Success Response
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "result": "status",
+    ///   "tx": "<tx receipt>",
+    ///   "id": 1
+    /// }
+    /// ```
+    ///
+    /// - `result`: Contains data related to the success of the operation. The nature of this data can vary based on the implementation.
+    ///
+    /// #### Error Response
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "error": {
+    ///     "code": <error_code>,
+    ///     "message": "<error_message>"
+    ///   },
+    ///   "id": 1
+    /// }
+    /// ```
+    ///
+    /// - `error`: An object containing details about the error.
+    /// - `code`: A numeric error code.
+    /// - `message`: A human-readable string describing the error.
+    ///
+    /// ### Example Usage
+    ///
+    /// #### Request
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "method": "sendGroupMessage",
+    ///   "params": {
+    ///     "conversationId": "0x1234abcd...",
+    ///     "payload": "SGVsbG8sIHdvcmxkIQ==",
+    ///     "identity": "0xAddress",
+    ///     "V": "####",
+    ///     "R": "#####",
+    ///     "S": "#####"
+    ///   },
+    ///   "id": 42
+    /// }
+    /// ```
+    ///
+    /// #### Response
+    /// ```json
+    /// {
+    ///   "jsonrpc": "2.0",
+    ///   "result": "Message sent successfully",
+    ///   "tx": "<tx receipt>",
+    ///   "id": 42
+    /// }
+    /// ```
     #[method(name = "sendMessage")]
     async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned>;
 
