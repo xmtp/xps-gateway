@@ -2,11 +2,12 @@ mod integration_util;
 
 use anyhow::Error;
 
-use ethers::{signers::LocalWallet, types::Bytes};
+use ethers::{signers::LocalWallet, types::Bytes, utils::keccak256};
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
     types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose},
 };
+use messaging::ConversationSignerExt;
 use xps_gateway::rpc::XpsClient;
 
 use ethers::middleware::Middleware;
@@ -27,13 +28,37 @@ async fn test_say_hello() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_send_message() -> Result<(), Error> {
-    with_xps_client(None, |client, _, _, _| async move {
+    with_xps_client(None, |client, context, _resolver, anvil| async move {
+        let wallet: LocalWallet = anvil.keys()[3].clone().into();
+        let me = get_user(&anvil, 3).await;
+
+        let conversation_id = keccak256(b"conversation_id");
+        let payload = Bytes::from_static(b"payload");
+
+        let signature = wallet
+            .sign_xmtp_message(
+                &context.conversation,
+                conversation_id,
+                payload.clone(),
+                me.address(),
+            )
+            .await?;
+
         let message = Message {
-            conversation_id: [0; 32],
-            payload: Bytes::from_static(b"payload"),
+            conversation_id: conversation_id,
+            payload: payload,
+            identity: me.address(),
+            signature: signature,
         };
+
+        let pre_nonce = context.conversation.nonce(me.address()).call().await?;
+        assert!(pre_nonce == U256::zero());
+
         let result = client.send_message(message).await;
-        assert!(!result.is_err());
+        assert!(result.is_ok());
+
+        let post_nonce = context.conversation.nonce(me.address()).call().await?;
+        assert!(post_nonce == pre_nonce + 1);
         Ok(())
     })
     .await

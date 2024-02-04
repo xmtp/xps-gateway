@@ -12,7 +12,6 @@ use lib_didethresolver::types::XmtpAttribute;
 #[rpc(server, client, namespace = "xps")]
 pub trait Xps {
     /// Send message using gateway's signer
-    // TODO: Change the [method](https://github.com/xmtp/xps-contract/blob/main/contracts/Conversation.sol#L56) to public and support it here - i.e. messages handled in gateway must include signature.
     #[method(name = "sendMessage")]
     async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned>;
 

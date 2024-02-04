@@ -43,7 +43,7 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
     async fn send_message(&self, message: Message) -> Result<(), ErrorObjectOwned> {
         let result = self
             .message_operations
-            .send_message(message.conversation_id, message.payload)
+            .send_message(message)
             .await
             .map_err(RpcError::from)?;
 

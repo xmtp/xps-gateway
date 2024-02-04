@@ -9,3 +9,5 @@ edition = "2021"
 serde.workspace = true
 lib-didethresolver.workspace = true
 ethers.workspace = true
+thiserror.workspace = true
+jsonrpsee.workspace = true

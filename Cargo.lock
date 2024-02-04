@@ -1410,8 +1410,10 @@ name = "gateway-types"
 version = "0.1.0"
 dependencies = [
  "ethers",
+ "jsonrpsee",
  "lib-didethresolver",
  "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -2154,6 +2156,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "ethers",
+ "gateway-types",
  "log",
  "serde",
  "thiserror",

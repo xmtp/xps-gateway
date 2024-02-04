@@ -1,6 +1,7 @@
 //! Shared types between XPS Gateawy and client (libxmtp)
+pub mod error;
 
-use ethers::prelude::Bytes;
+use ethers::types::{Address, Bytes, Signature};
 use serde::{Deserialize, Serialize};
 
 /// Address of the did:ethr Registry on Sepolia
@@ -16,6 +17,10 @@ pub struct Message {
     pub conversation_id: [u8; 32],
     /// message content in bytes
     pub payload: Bytes,
+    // Sender's identity
+    pub identity: Address,
+    // Signature by sender
+    pub signature: Signature,
 }
 
 /// GrantInstallationResult represents the result of a grant installation operation in the DID registry.
