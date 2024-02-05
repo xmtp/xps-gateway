@@ -4,8 +4,8 @@ use ethers::core::types::Signature;
 use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::GrantInstallationResult;
 use gateway_types::Message;
+use gateway_types::{GrantInstallationResult, WalletBalance};
 use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods
@@ -312,4 +312,86 @@ pub trait Xps {
 
     #[method(name = "walletAddress")]
     async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned>;
+
+    /// ### Documentation for JSON RPC Endpoint: `balance`
+    /// ---
+    /// #### Endpoint Name: `balance`
+    /// #### Description:
+    /// The `balance` endpoint retrieves the current balance of the internal wallet managed by the server. This endpoint is essential for applications that need to display or monitor the wallet's balance, especially in the context of cryptocurrency transactions or account management.
+    /// #### Request:
+    /// - **Method:** `POST`
+    /// - **URL:** `/rpc/v1/balance`
+    /// - **Headers:**
+    /// - `Content-Type: application/json`
+    /// - **Body:**
+    /// - **JSON Object:**
+    ///     - `jsonrpc`: `"2.0"`
+    ///     - `method`: `"balance"`
+    ///     - `params`: Array (optional parameters as required)
+    ///     - `id`: Request identifier (integer or string)
+    /// **Example Request Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "method": "balance",
+    /// "params": [],
+    /// "id": 1
+    /// }
+    /// ```
+    /// #### Response:
+    /// - **Success Status Code:** `200 OK`
+    /// - **Error Status Codes:**
+    /// - `400 Bad Request` - Invalid request format or parameters.
+    /// - `500 Internal Server Error` - Server or wallet-related error.
+    /// **Success Response Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "result": {
+    ///     "balance": "100.0 ETH",
+    ///     "unit": "ETH"
+    /// },
+    /// "id": 1
+    /// }
+    /// ```
+    /// **Error Response Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "error": {
+    ///     "code": -32602,
+    ///     "message": "Invalid parameters"
+    /// },
+    /// "id": 1
+    /// }
+    /// ```
+    /// #### Error Handling:
+    /// - **Invalid Parameters:** Check if the request body is properly formatted and includes valid parameters.
+    /// - **Wallet or Server Errors:** Ensure that the server and wallet are operational. Consult server logs for detailed error information.
+    /// #### Security Considerations:
+    /// - **Authentication and Authorization:** Implement robust authentication and authorization checks to ensure only authorized users can access wallet balance information.
+    /// - **Secure Communication:** Utilize HTTPS to encrypt data in transit and prevent eavesdropping.
+    /// #### Usage Example:
+    /// ```javascript
+    /// const requestBody = {
+    /// jsonrpc: "2.0",
+    /// method: "balance",
+    /// params: [],
+    /// id: 1
+    /// };
+    /// fetch('https://server.example.com/rpc/v1/balance', {
+    /// method: 'POST',
+    /// headers: {
+    ///     'Content-Type': 'application/json'
+    /// },
+    /// body: JSON.stringify(requestBody)
+    /// })
+    /// .then(response => response.json())
+    /// .then(data => console.log('Wallet Balance:', data.result))
+    /// .catch(error => console.error('Error:', error));
+    /// ```
+    /// </div>
+    /// ```
+    #[method(name = "balance")]
+    async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned>;
 }

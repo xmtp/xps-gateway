@@ -41,3 +41,13 @@ pub struct GrantInstallationResult {
     pub message: String,
     pub transaction: String,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WalletBalance {
+    // Unique identifier for a conversation
+    #[serde(rename = "balance")]
+    pub balance: String,
+    /// message content in bytes
+    #[serde(rename = "unit")]
+    pub unit: String,
+}

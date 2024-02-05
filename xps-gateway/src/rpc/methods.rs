@@ -8,7 +8,7 @@ use jsonrpsee::types::error::ErrorCode;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::{core::types::Signature, providers::Middleware};
-use gateway_types::GrantInstallationResult;
+use gateway_types::{GrantInstallationResult, WalletBalance};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use rand::{rngs::StdRng, SeedableRng};
@@ -94,6 +94,14 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
 
     async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
         Ok(self.wallet.address())
+    }
+
+    async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned> {
+        // todo : replace with actual implemenetation.
+        Ok(WalletBalance {
+            balance: "100.0 ETH".to_string(),
+            unit: "ETH".to_string(),
+        })
     }
 }
 
