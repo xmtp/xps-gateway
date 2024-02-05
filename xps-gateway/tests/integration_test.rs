@@ -9,11 +9,12 @@ use lib_didethresolver::{
 };
 use xps_gateway::rpc::XpsClient;
 
-use ethers::types::{Address, U256};
+//use ethers::ethers_signers::Signer;
+use ethers::providers::Middleware;
+use ethers::types::{Address, TransactionRequest, U256};
 use gateway_types::Message;
-use xps_gateway::rpc::*;
-
 use integration_util::*;
+use xps_gateway::rpc::*;
 
 #[tokio::test]
 async fn test_say_hello() -> Result<(), Error> {
@@ -343,10 +344,24 @@ async fn test_revoke_installation() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_balance() -> Result<(), Error> {
-    with_xps_client(None, |client, _context, _resolver, _anvil| async move {
-        // TODO : we need a better way to test this endpoint.
-        let balance = client.balance().await?;
+    with_xps_client(None, |client, context, _resolver, _anvil| async move {
+        // by default, we have no balance. verify that.
+        let mut balance = client.balance().await?;
         assert_eq!(balance.balance, "0.000000000000000000 ETH");
+        assert_eq!(balance.unit, "ETH");
+
+        // fund the wallet account.
+        let accounts = context.signer.get_accounts().await?;
+        let from = accounts[1];
+        let tx = TransactionRequest::new()
+            .to(client.wallet_address().await?)
+            .value(5_000_000_000_000_000_000_000_u128)
+            .from(from);
+        context.signer.send_transaction(tx, None).await?.await?;
+
+        // check to see if the balance gets updated.
+        balance = client.balance().await?;
+        assert_eq!(balance.balance, "5000.000000000000000000 ETH");
         assert_eq!(balance.unit, "ETH");
 
         Ok(())

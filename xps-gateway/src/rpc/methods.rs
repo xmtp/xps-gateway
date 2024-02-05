@@ -8,7 +8,7 @@ use jsonrpsee::types::error::ErrorCode;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::utils::format_units;
-use ethers::{core::types::BlockId, core::types::Signature, providers::Middleware};
+use ethers::{core::types::Signature, providers::Middleware};
 use gateway_types::{GrantInstallationResult, WalletBalance};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
@@ -114,7 +114,7 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         let wei_balance: U256 = self
             .signer
             .provider()
-            .get_balance(self.wallet.address(), Option::<BlockId>::None)
+            .get_balance(self.wallet.address(), None)
             .await
             .unwrap();
 
