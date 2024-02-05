@@ -7,7 +7,8 @@ use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
 use ethers::prelude::*;
-use ethers::{core::types::Signature, providers::Middleware};
+use ethers::utils::format_units;
+use ethers::{core::types::BlockId, core::types::Signature, providers::Middleware};
 use gateway_types::{GrantInstallationResult, WalletBalance};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
@@ -96,10 +97,35 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         Ok(self.wallet.address())
     }
 
+    /// Fetches the current balance of the wallet in Ether.
+    ///
+    /// This asynchronous method queries the Ethereum blockchain to get the current balance
+    /// of the associated wallet address, converting the result from wei (the smallest unit
+    /// of Ether) to Ether for more understandable reading.
+    ///
+    /// # Returns
+    /// - `Ok(WalletBalance)`: On success, returns a `WalletBalance` struct containing the
+    ///   wallet's balance formatted as a string in Ether, along with the unit "ETH".
+    /// - `Err(ErrorObjectOwned)`: On failure, returns an error object detailing why the
+    ///   balance could not be fetched or converted.
+    ///
     async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned> {
-        // todo : replace with actual implemenetation.
+        // Fetch the balance in wei (the smallest unit of Ether) from the blockchain.
+        let wei_balance: U256 = self
+            .signer
+            .provider()
+            .get_balance(self.wallet.address(), Option::<BlockId>::None)
+            .await
+            .unwrap();
+
+        // Convert the balance from wei to Ether, formatting the result as a string.
+        let ether_balance =
+            format_units(wei_balance, 18) // 18 decimal places for Ether
+                .unwrap_or_else(|_| "failed to convert balance".to_string());
+
+        // Return the balance in Ether as a WalletBalance object.
         Ok(WalletBalance {
-            balance: "100.0 ETH".to_string(),
+            balance: format!("{} ETH", ether_balance),
             unit: "ETH".to_string(),
         })
     }

@@ -42,12 +42,13 @@ pub struct GrantInstallationResult {
     pub transaction: String,
 }
 
+/// WalletBalance used as the return value for the balance rpc endpoint.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct WalletBalance {
-    // Unique identifier for a conversation
+    /// The balance for the wallet
     #[serde(rename = "balance")]
     pub balance: String,
-    /// message content in bytes
+    /// The unit used for the balance
     #[serde(rename = "unit")]
     pub unit: String,
 }
