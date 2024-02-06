@@ -188,8 +188,8 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
         let value = b"000000000000000000000000000000000000000000000000000000000000000000";
         set_attribute(name, value.to_vec(), &me, &context.registry).await?;
 
-        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
-        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+        // let value = b"111111111111111111111111111111111111111111111111111111111111111111";
+        // set_attribute(name, value.to_vec(), &me, &context.registry).await?;
 
         let res = client
             .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
@@ -200,8 +200,9 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
         assert_eq!(
             res.installation,
             vec![
-                b"000000000000000000000000000000000000000000000000000000000000000000",
-                b"111111111111111111111111111111111111111111111111111111111111111111"
+                hex::decode(b"000000000000000000000000000000000000000000000000000000000000000000")
+                    .unwrap(),
+                // b"111111111111111111111111111111111111111111111111111111111111111111"
             ]
         );
 

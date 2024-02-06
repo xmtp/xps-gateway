@@ -27,7 +27,7 @@ anyhow = "1.0"
 thiserror = "1.0"
 ethers = { version = "2.0.11", features = ["abigen"] }
 ctor = "0.2"
-lib-didethresolver = { path = "../../workspace-didethresolver/insipx/fetch-key-packages" }
+lib-didethresolver = { path = "../../../workspace-didethresolver/insipx/fetch-key-package/lib" }
 # lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "main" }
 gateway-types = { path = "./gateway-types" }
 rustc-hex = "2.1"
