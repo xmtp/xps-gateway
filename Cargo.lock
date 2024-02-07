@@ -2053,6 +2053,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "lib-didethresolver"
 version = "0.1.0"
+source = "git+https://github.com/xmtp/didethresolver?branch=main#64b6ca722622324aba59735c6dcd48db70b13c92"
 dependencies = [
  "async-trait",
  "base64 0.21.7",
