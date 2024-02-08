@@ -70,3 +70,14 @@ impl fmt::Display for Status {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_status_display() {
+        assert_eq!(format!("{}", Status::Completed), "completed");
+        assert_eq!(format!("{}", Status::Failed), "failed");
+    }
+}
