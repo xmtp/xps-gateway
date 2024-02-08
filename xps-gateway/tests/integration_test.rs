@@ -1,12 +1,14 @@
 mod integration_util;
 
+use std::str::FromStr;
+
 use anyhow::Error;
 
 use ethers::{signers::LocalWallet, signers::Signer};
-
+use jsonrpsee::core::ClientError;
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
-    types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose},
+    types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
 };
 use xps_gateway::rpc::*;
 
@@ -440,6 +442,47 @@ async fn test_fetch_key_packages_client() -> Result<(), Error> {
             .unwrap()]
         );
 
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_did_deactivation() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+
+        let new_owner = Address::from_str(NULL_ADDRESS).unwrap();
+        let signature = me.sign_owner(&context.registry, new_owner).await.unwrap();
+        let _ = context
+            .registry
+            .change_owner_signed(
+                me.address(),
+                signature.v.try_into().unwrap(),
+                signature.r.into(),
+                signature.s.into(),
+                new_owner,
+            )
+            .send()
+            .await?
+            .await?;
+
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await
+            .unwrap_err();
+
+        assert!(matches!(res, ClientError::Call(_)));
+        match res {
+            ClientError::Call(err) => {
+                assert_eq!(err.code(), -31999);
+                assert_eq!(
+                    err.message(),
+                    "The DID has been deactivated, and no longer valid"
+                );
+            }
+            _ => panic!("Expected a client error. this should never match"),
+        }
         Ok(())
     })
     .await
