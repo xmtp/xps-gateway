@@ -5,7 +5,7 @@ members = [
   "messaging",
   "inbox",
   "registry", 
-  "gateway-types",
+  "gateway-types", "lib-xps", "xps",
 ]
 
 exclude = [ ]
