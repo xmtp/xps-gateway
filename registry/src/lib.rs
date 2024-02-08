@@ -25,6 +25,7 @@ where
         Self { registry, resolver }
     }
 
+    /// Internal function to resolve a DID to an ethereum address
     fn resolve_did_address(&self, did: String) -> Result<H160, ContactOperationError<M>> {
         // for now, we will just assume the DID is a valid ethereum wallet address
         // TODO: Parse or resolve the actual DID
@@ -32,6 +33,7 @@ where
         Ok(address)
     }
 
+    /// Fetches key packages for a given DID using [`Resolver::resolve_did`]
     pub async fn fetch_key_packages(
         &self,
         did: String,
@@ -76,6 +78,7 @@ where
         })
     }
 
+    /// Grants an XMTP installation via the did:ethr registry.
     pub async fn grant_installation(
         &self,
         did: String,
@@ -112,6 +115,7 @@ where
         })
     }
 
+    /// Revokes an XMTP installation via the did:ethr registry.
     pub async fn revoke_installation(
         &self,
         did: String,
