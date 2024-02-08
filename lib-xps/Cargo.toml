@@ -19,7 +19,7 @@ thiserror.workspace = true
 ethers = { workspace = true, features = ["ws"] }
 ctor.workspace = true
 lib-didethresolver.workspace = true
-gateway-types.workspace = true
+xps-types.workspace = true
 hex.workspace = true
 rand = "0.8.5"
 tokio-stream = { version = "0.1", features = ["net"] }

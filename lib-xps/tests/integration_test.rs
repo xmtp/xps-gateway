@@ -10,7 +10,7 @@ use lib_didethresolver::{
     did_registry::RegistrySignerExt,
     types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
 };
-use xps_gateway::rpc::*;
+use lib_xps::rpc::*;
 
 use ethers::types::{Address, U256};
 use xps_types::{Message, Status};

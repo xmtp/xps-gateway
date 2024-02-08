@@ -1406,14 +1406,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gateway-types"
-version = "0.1.0"
-dependencies = [
- "lib-didethresolver",
- "serde",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2163,6 +2155,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "lib-xps"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "ctor",
+ "ethers",
+ "futures",
+ "hex",
+ "jsonrpsee 0.22.0",
+ "lib-didethresolver",
+ "log",
+ "rand",
+ "registry",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "tracing-subscriber",
+ "xps-types",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2904,13 +2921,13 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "ethers",
- "gateway-types",
  "lib-didethresolver",
  "log",
  "rustc-hex",
  "thiserror",
  "tokio",
  "tracing",
+ "xps-types",
 ]
 
 [[package]]
@@ -4483,29 +4500,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "xps_gateway"
+name = "xps"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "clap",
- "ctor",
- "ethers",
- "futures",
- "gateway-types",
- "hex",
- "jsonrpsee 0.22.0",
- "lib-didethresolver",
- "log",
- "rand",
- "registry",
- "serde",
- "serde_json",
- "thiserror",
+ "lib-xps",
  "tokio",
- "tokio-stream",
- "tracing",
- "tracing-subscriber",
+]
+
+[[package]]
+name = "xps-types"
+version = "0.1.0"
+dependencies = [
+ "lib-didethresolver",
+ "serde",
 ]
 
 [[package]]

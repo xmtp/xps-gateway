@@ -27,7 +27,7 @@ use std::{
 use tokio::time::timeout as timeout_tokio;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
 
-use xps_gateway::{
+use lib_xps::{
     types::{GatewayContext, GatewaySigner},
     XpsMethods, XpsServer,
 };
