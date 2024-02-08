@@ -18,4 +18,10 @@ pub enum ContactOperationError<M: Middleware> {
     ProviderError(#[from] ProviderError),
     #[error("Error converting from int: {0}")]
     IntConversion(#[from] TryFromIntError),
+    #[error("Error Resolving {1}: {0}")]
+    ResolutionError(lib_didethresolver::error::ResolverError<M>, String),
+    #[error("The DID has been deactivated, and no longer valid")]
+    DIDDeactivated,
+    #[error("Type failed to convert")]
+    Type(#[from] lib_didethresolver::error::TypeError),
 }

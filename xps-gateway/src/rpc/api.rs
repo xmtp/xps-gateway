@@ -4,8 +4,8 @@ use ethers::core::types::Signature;
 use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::GrantInstallationResult;
 use gateway_types::Message;
+use gateway_types::{GrantInstallationResult, KeyPackageResult};
 use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods
@@ -222,6 +222,94 @@ pub trait Xps {
         signature: Signature,
     ) -> Result<(), ErrorObjectOwned>;
 
+    /// ## JSON-RPC Endpoint Documentation
+    ///
+    /// #### Request:
+    ///
+    /// - **Method:** `POST`
+    /// - **URL:** `/rpc/v1/fetchKeyPackages`
+    /// - **Headers:**
+    ///   - `Content-Type: application/json`
+    /// - **Body:**
+    ///   - **JSON Object:**
+    ///     - `jsonrpc`: `"2.0"`
+    ///     - `method`: `"fetchKeyPackages"`
+    ///     - `params`: Array (optional parameters as required)
+    ///     - `id`: Request identifier (integer or string)
+    ///
+    /// ### Endpoint: `fetchKeyPackages`
+    ///
+    /// #### Description
+    ///
+    /// The `fetchKeyPackages` endpoint is responsible for retrieving the contact bundle for the XMTP device installations. The request must be made to a valid did with an XMTP profile.
+    ///
+    /// #### Request
+    ///
+    /// The request for this endpoint should contain a valid DID. All returned information is public.
+    ///
+    /// ##### Parameters:
+    ///
+    /// -   `DID` (string): Unique XMTP identifier for the user requesting the installation.
+    ///
+    /// ##### Example Request:
+    ///
+    /// ```json
+    /// {
+    ///     "jsonrpc": "2.0",
+    ///     "method": "fetchKeyPackages",
+    ///     "params": {
+    ///         "did": "12345"
+    ///     },
+    ///     "id": 1
+    /// }
+    /// ```
+    ///
+    /// #### Response
+    ///
+    /// The response will provide an optionally empty list of installation bundles.
+    ///
+    /// ##### Result Fields:
+    ///
+    /// -   `status` (string): The status of the request, e.g., 'success'.
+    /// -   `installation` (array): Array of installation bundles.
+    ///
+    /// ##### Example Response:
+    ///
+    /// ```json
+    /// {
+    ///     "jsonrpc": "2.0",
+    ///     "result": {
+    ///         "status": "success",
+    ///         "installation": ["bundle1...", "bundle2..."]
+    ///     },
+    ///     "id": 1
+    /// }
+    /// ```
+    ///
+    /// #### Error Handling
+    ///
+    /// In case of an error, the response will include an error object with details.
+    ///
+    /// ##### Error Object Fields:
+    ///
+    /// -   `code` (integer): Numeric code representing the error type.
+    /// -   `message` (string): Description of the error.
+    ///
+    /// ##### Example Error Response:
+    ///
+    /// ```json
+    /// {
+    ///     "jsonrpc": "2.0",
+    ///     "error": {
+    ///         "code": 403,
+    ///         "message": "User not authorized for installation."
+    ///     },
+    ///     "id": 1
+    /// }
+    /// ```
+    #[method(name = "fetchKeyPackages")]
+    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned>;
+
     /// # Documentation for JSON RPC Endpoint: `status`
 
     /// ## Overview
@@ -304,7 +392,7 @@ pub trait Xps {
     /// $ $ curl -H "Content-Type: application/json" -d '{"id":7000, "jsonrpc":"2.0", "method":"xps_status"}' http:///localhost:34695
     /// {"jsonrpc":"2.0","result":"OK","id":7000}
     /// ```
-
+    ///
     /// ### Notes
     /// - The system should have proper error handling to deal with invalid requests, unauthorized access, and other potential issues.
     #[method(name = "status")]

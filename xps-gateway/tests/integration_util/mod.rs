@@ -11,10 +11,14 @@ use ethers::{
     middleware::SignerMiddleware,
     providers::{Provider, Ws},
     signers::{LocalWallet, Signer as _},
+    types::U256,
     utils::AnvilInstance,
 };
 use futures::future::FutureExt;
-use lib_didethresolver::{did_registry::DIDRegistry, Resolver};
+use lib_didethresolver::{
+    did_registry::{DIDRegistry, RegistrySignerExt},
+    Resolver,
+};
 use std::{
     future::Future,
     sync::{Arc, Once},
@@ -144,4 +148,28 @@ fn init_test_logging() {
             .with(fmt)
             .init()
     })
+}
+
+pub async fn set_attribute(
+    name: [u8; 32],
+    value: Vec<u8>,
+    wallet: &LocalWallet,
+    registry: &DIDRegistry<GatewaySigner<Provider<Ws>>>,
+) -> Result<(), Error> {
+    let validity = U256::from(604_800);
+    let signature = wallet
+        .sign_attribute(registry, name, value.to_vec(), validity)
+        .await?;
+
+    let attr = registry.set_attribute_signed(
+        wallet.address(),
+        signature.v.try_into().unwrap(),
+        signature.r.into(),
+        signature.s.into(),
+        name,
+        value.into(),
+        validity,
+    );
+    attr.send().await?.await?;
+    Ok(())
 }
