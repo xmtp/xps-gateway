@@ -12,7 +12,7 @@ use xps_gateway::rpc::XpsClient;
 //use ethers::ethers_signers::Signer;
 use ethers::providers::Middleware;
 use ethers::types::{Address, TransactionRequest, U256};
-use gateway_types::Message;
+use gateway_types::{Message, Unit};
 use integration_util::*;
 use xps_gateway::rpc::*;
 
@@ -347,8 +347,8 @@ async fn test_balance() -> Result<(), Error> {
     with_xps_client(None, |client, context, _resolver, _anvil| async move {
         // by default, we have no balance. verify that.
         let mut balance = client.balance().await?;
-        assert_eq!(balance.balance, "0.000000000000000000 ETH");
-        assert_eq!(balance.unit, "ETH");
+        assert_eq!(balance.balance, U256::from(0));
+        assert_eq!(balance.unit, Unit::Eth);
 
         // fund the wallet account.
         let accounts = context.signer.get_accounts().await?;
@@ -361,8 +361,11 @@ async fn test_balance() -> Result<(), Error> {
 
         // check to see if the balance gets updated.
         balance = client.balance().await?;
-        assert_eq!(balance.balance, "5000.000000000000000000 ETH");
-        assert_eq!(balance.unit, "ETH");
+        assert_eq!(
+            balance.balance,
+            U256::from(5_000_000_000_000_000_000_000_u128)
+        );
+        assert_eq!(balance.unit, Unit::Eth);
 
         Ok(())
     })

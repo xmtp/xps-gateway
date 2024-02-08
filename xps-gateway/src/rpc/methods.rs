@@ -7,9 +7,8 @@ use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
 use ethers::prelude::*;
-use ethers::utils::format_units;
 use ethers::{core::types::Signature, providers::Middleware};
-use gateway_types::{GrantInstallationResult, WalletBalance};
+use gateway_types::{GrantInstallationResult, Unit, WalletBalance};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use rand::{rngs::StdRng, SeedableRng};
@@ -118,15 +117,10 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
             .await
             .unwrap();
 
-        // Convert the balance from wei to Ether, formatting the result as a string.
-        let ether_balance =
-            format_units(wei_balance, 18) // 18 decimal places for Ether
-                .unwrap_or_else(|_| "failed to convert balance".to_string());
-
         // Return the balance in Ether as a WalletBalance object.
         Ok(WalletBalance {
-            balance: format!("{} ETH", ether_balance),
-            unit: "ETH".to_string(),
+            balance: wei_balance,
+            unit: Unit::Eth,
         })
     }
 }
