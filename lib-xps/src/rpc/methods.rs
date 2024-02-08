@@ -8,14 +8,14 @@ use jsonrpsee::types::error::ErrorCode;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::{core::types::Signature, providers::Middleware};
-use gateway_types::{GrantInstallationResult, KeyPackageResult};
+use xps_types::{GrantInstallationResult, KeyPackageResult};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use rand::{rngs::StdRng, SeedableRng};
 use std::sync::Arc;
 use thiserror::Error;
 
-use gateway_types::Message;
+use xps_types::Message;
 use registry::{error::ContactOperationError, ContactOperations};
 
 // DEFAULT_ATTRIBUTE_VALIDITY is the hard-coded value we use for the validity of the attributes we set.

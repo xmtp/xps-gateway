@@ -5,7 +5,7 @@ use std::str::FromStr;
 use error::ContactOperationError;
 use ethers::types::{H160, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
-use gateway_types::{GrantInstallationResult, KeyPackageResult, Status};
+use xps_types::{GrantInstallationResult, KeyPackageResult, Status};
 use lib_didethresolver::types::VerificationMethodProperties;
 use lib_didethresolver::Resolver;
 use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};

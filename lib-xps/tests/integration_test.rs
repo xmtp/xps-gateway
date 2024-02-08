@@ -13,7 +13,7 @@ use lib_didethresolver::{
 use xps_gateway::rpc::*;
 
 use ethers::types::{Address, U256};
-use gateway_types::{Message, Status};
+use xps_types::{Message, Status};
 
 use integration_util::*;
 

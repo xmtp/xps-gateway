@@ -4,8 +4,8 @@ use ethers::core::types::Signature;
 use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::Message;
-use gateway_types::{GrantInstallationResult, KeyPackageResult};
+use xps_types::Message;
+use xps_types::{GrantInstallationResult, KeyPackageResult};
 use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods

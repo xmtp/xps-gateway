@@ -1,11 +1,12 @@
 [workspace]
 
 members = [
-  "xps-gateway",
+  "xps",
+  "lib-xps",
   "messaging",
   "inbox",
   "registry", 
-  "gateway-types", "lib-xps", "xps",
+  "xps-types", 
 ]
 
 exclude = [ ]

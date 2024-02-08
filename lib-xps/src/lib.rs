@@ -7,7 +7,7 @@ use ethers::{
     abi::Address,
     providers::{Provider, Ws},
 };
-use gateway_types::DID_ETH_REGISTRY;
+use xps_types::DID_ETH_REGISTRY;
 use jsonrpsee::server::Server;
 use std::str::FromStr;
 
