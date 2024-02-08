@@ -32,7 +32,7 @@ pub type Bytes = Vec<u8>;
 /// transaction identifier associated with the blockchain transaction.
 ///
 /// # Fields
-/// * `status` - One of [`Status::Completed`] or [`Status::Failed`], indicating the outcome of the
+/// * `status` - One of [`Status::Success`] or [`Status::Failed`], indicating the outcome of the
 /// operation.
 /// * `message` - A `String` providing more detailed information about the operation. This
 ///   can be a success message, error description, or any other relevant information.
@@ -58,14 +58,14 @@ pub struct KeyPackageResult {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum Status {
-    Completed,
+    Success,
     Failed,
 }
 
 impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Status::Completed => write!(f, "completed"),
+            Status::Success => write!(f, "success"),
             Status::Failed => write!(f, "failed"),
         }
     }
@@ -77,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_status_display() {
-        assert_eq!(format!("{}", Status::Completed), "completed");
+        assert_eq!(format!("{}", Status::Success), "success");
         assert_eq!(format!("{}", Status::Failed), "failed");
     }
 }

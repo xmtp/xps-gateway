@@ -69,7 +69,7 @@ where
             .collect::<Vec<VerificationMethodProperties>>();
 
         Ok(KeyPackageResult {
-            status: Status::Completed,
+            status: Status::Success,
             message: "Key packages retrieved".to_string(),
             installation: properties
                 .into_iter()
@@ -109,7 +109,7 @@ where
             .await?
             .await?;
         Ok(GrantInstallationResult {
-            status: Status::Completed,
+            status: Status::Success,
             message: "Installation request complete.".to_string(),
             transaction: transaction_receipt.unwrap().transaction_hash.to_string(),
         })

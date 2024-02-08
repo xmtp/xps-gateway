@@ -342,7 +342,7 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
             .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
             .await?;
 
-        assert_eq!(res.status, Status::Completed);
+        assert_eq!(res.status, Status::Success);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
             res.installation,
@@ -387,7 +387,7 @@ async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
             .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
             .await?;
 
-        assert_eq!(res.status, Status::Completed);
+        assert_eq!(res.status, Status::Success);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
             res.installation,
@@ -430,7 +430,7 @@ async fn test_fetch_key_packages_client() -> Result<(), Error> {
             .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
             .await?;
 
-        assert_eq!(res.status, Status::Completed);
+        assert_eq!(res.status, Status::Success);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
             res.installation,
