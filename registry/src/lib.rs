@@ -5,10 +5,10 @@ use std::str::FromStr;
 use error::ContactOperationError;
 use ethers::types::{H160, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
-use xps_types::{GrantInstallationResult, KeyPackageResult, Status};
 use lib_didethresolver::types::VerificationMethodProperties;
 use lib_didethresolver::Resolver;
 use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
+use xps_types::{GrantInstallationResult, KeyPackageResult, Status};
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,

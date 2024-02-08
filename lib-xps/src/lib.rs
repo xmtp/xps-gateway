@@ -7,9 +7,9 @@ use ethers::{
     abi::Address,
     providers::{Provider, Ws},
 };
-use xps_types::DID_ETH_REGISTRY;
 use jsonrpsee::server::Server;
 use std::str::FromStr;
+use xps_types::DID_ETH_REGISTRY;
 
 pub use crate::rpc::{XpsMethods, XpsServer};
 use crate::types::GatewayContext;

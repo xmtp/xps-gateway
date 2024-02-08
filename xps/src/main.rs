@@ -3,11 +3,7 @@ use clap::Parser;
 use lib_xps::run;
 
 #[derive(Parser, Debug)]
-#[command(
-    name = "xps",
-    version = "0.1.0",
-    about = "XMTP Postal Service"
-)]
+#[command(name = "xps", version = "0.1.0", about = "XMTP Postal Service")]
 struct Args {
     #[arg(short = 'p', long = "port", default_value_t = 0)]
     port: u16,
