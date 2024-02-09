@@ -1,26 +1,28 @@
 //! Shared types between XPS Gateawy and client (libxmtp)
+pub mod error;
 
+use ethers::types::{Address, Bytes as EthersBytes, Signature};
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
 /// Address of the did:ethr Registry on Sepolia
 pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
+// Address of the Converstion on Sepolia
+pub const CONVERSATION: &str = "0x15aE865d0645816d8EEAB0b7496fdd24227d1801";
 
 /// A message sent to a conversation
 #[derive(Serialize, Deserialize)]
 pub struct Message {
     // Unique identifier for a conversation
     #[serde(rename = "conversationId")]
-    pub conversation_id: Vec<u8>,
+    pub conversation_id: [u8; 32],
     /// message content in bytes
-    pub payload: Vec<u8>,
-    /// Signature of V
-    pub v: Vec<u8>,
-    /// Signature of R
-    pub r: Vec<u8>,
-    /// Signature of S
-    pub s: Vec<u8>,
+    pub payload: EthersBytes,
+    // Sender's identity
+    pub identity: Address,
+    // Signature by sender
+    pub signature: Signature,
 }
 
 pub type Bytes = Vec<u8>;
@@ -41,6 +43,13 @@ pub type Bytes = Vec<u8>;
 ///
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct GrantInstallationResult {
+    pub status: Status,
+    pub message: String,
+    pub transaction: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct SendMessageResult {
     pub status: Status,
     pub message: String,
     pub transaction: String,

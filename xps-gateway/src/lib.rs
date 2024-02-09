@@ -7,7 +7,7 @@ use ethers::{
     abi::Address,
     providers::{Provider, Ws},
 };
-use gateway_types::DID_ETH_REGISTRY;
+use gateway_types::{CONVERSATION, DID_ETH_REGISTRY};
 use jsonrpsee::server::Server;
 use std::str::FromStr;
 
@@ -25,11 +25,12 @@ pub async fn run(host: String, port: u16) -> Result<()> {
     let addr = server.local_addr()?;
 
     let registry_contract = Address::from_str(DID_ETH_REGISTRY)?;
+    let conversation_contract = Address::from_str(CONVERSATION)?;
     let provider = Provider::<Ws>::connect("wss://ethereum-sepolia.publicnode.com")
         .await
         .unwrap();
 
-    let context = GatewayContext::new(registry_contract, provider).await?;
+    let context = GatewayContext::new(registry_contract, conversation_contract, provider).await?;
     let xps_methods = rpc::XpsMethods::new(&context);
     let handle = server.start(xps_methods.into_rpc());
 

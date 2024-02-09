@@ -1,14 +1,8 @@
 [workspace]
 
-members = [
-  "xps-gateway",
-  "messaging",
-  "inbox",
-  "registry", 
-  "gateway-types",
-]
+members = ["xps-gateway", "messaging", "inbox", "registry", "gateway-types"]
 
-exclude = [ ]
+exclude = []
 
 # Make the feature resolver explicit.
 # See https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details
