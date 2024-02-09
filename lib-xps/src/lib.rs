@@ -11,7 +11,7 @@ use jsonrpsee::server::Server;
 use std::str::FromStr;
 use xps_types::DID_ETH_REGISTRY;
 
-pub use crate::rpc::{XpsMethods, XpsServer};
+pub use crate::rpc::{XpsClient, XpsMethods, XpsServer};
 use crate::types::GatewayContext;
 
 /// Entrypoint for the xps Gateway
