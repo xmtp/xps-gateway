@@ -2,7 +2,8 @@
 use ethers::types::U256;
 use ethers::utils::format_units;
 use serde::{Deserialize, Serialize};
-use std::fmt::{self, Display};
+use std::fmt;
+use std::fmt::Display;
 
 /// Address of the did:ethr Registry on Sepolia
 pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
@@ -23,6 +24,8 @@ pub struct Message {
     pub s: Vec<u8>,
 }
 
+pub type Bytes = Vec<u8>;
+
 /// GrantInstallationResult represents the result of a grant installation operation in the DID registry.
 ///
 /// This struct encapsulates the outcome of an attempt to grant an installation,
@@ -30,16 +33,16 @@ pub struct Message {
 /// transaction identifier associated with the blockchain transaction.
 ///
 /// # Fields
-/// * `status` - A `String` indicating the outcome status of the operation. Typically, this
-///   would be values like "Success" or "Failure".
+/// * `status` - One of [`Status::Success`] or [`Status::Failed`], indicating the outcome of the
+/// operation.
 /// * `message` - A `String` providing more detailed information about the operation. This
 ///   can be a success message, error description, or any other relevant information.
 /// * `transaction` - A `String` representing the unique identifier of the transaction on the
 ///   blockchain. This can be used to track the transaction in a blockchain explorer.
 ///
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct GrantInstallationResult {
-    pub status: String,
+    pub status: Status,
     pub message: String,
     pub transaction: String,
 }
@@ -82,5 +85,41 @@ impl Display for Unit {
             Unit::Eth => write!(f, "ETH"),
             Unit::Other(value) => write!(f, "{}", value),
         }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct KeyPackageResult {
+    /// Status of the operation
+    pub status: Status,
+    /// A message relating to the operation
+    pub message: String,
+    /// A list of key packages
+    pub installation: Vec<Bytes>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum Status {
+    Success,
+    Failed,
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Status::Success => write!(f, "success"),
+            Status::Failed => write!(f, "failed"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_status_display() {
+        assert_eq!(format!("{}", Status::Success), "success");
+        assert_eq!(format!("{}", Status::Failed), "failed");
     }
 }

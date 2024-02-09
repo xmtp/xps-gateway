@@ -11,7 +11,7 @@ use ethers::{
     core::types::Signature,
     providers::{Middleware, ProviderError},
 };
-use gateway_types::{GrantInstallationResult, Unit, WalletBalance};
+use gateway_types::{GrantInstallationResult, KeyPackageResult, Unit, WalletBalance};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use rand::{rngs::StdRng, SeedableRng};
@@ -125,6 +125,16 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
             balance: wei_balance,
             unit: Unit::Eth,
         })
+    }
+
+    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned> {
+        log::debug!("xps_fetchKeyPackages called");
+        let result = self
+            .contact_operations
+            .fetch_key_packages(did)
+            .await
+            .map_err(RpcError::from)?;
+        Ok(result)
     }
 }
 

@@ -1,19 +1,19 @@
 mod integration_util;
 
+use std::str::FromStr;
+
 use anyhow::Error;
 
-use ethers::signers::LocalWallet;
-use lib_didethresolver::{
-    did_registry::RegistrySignerExt,
-    types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose},
-};
-use xps_gateway::rpc::XpsClient;
-
-//use ethers::ethers_signers::Signer;
 use ethers::providers::Middleware;
 use ethers::types::{Address, TransactionRequest, U256};
-use gateway_types::{Message, Unit};
+use ethers::{signers::LocalWallet, signers::Signer};
+use gateway_types::{Message, Status, Unit};
 use integration_util::*;
+use jsonrpsee::core::ClientError;
+use lib_didethresolver::{
+    did_registry::RegistrySignerExt,
+    types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
+};
 use xps_gateway::rpc::*;
 
 #[tokio::test]
@@ -267,25 +267,11 @@ async fn test_grant_installation() -> Result<(), Error> {
 #[tokio::test]
 async fn test_revoke_installation() -> Result<(), Error> {
     with_xps_client(None, |client, context, resolver, anvil| async move {
-        let wallet: LocalWallet = anvil.keys()[3].clone().into();
-        let me = get_user(&anvil, 3).await;
+        let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
         let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
-        let validity = U256::from(604_800);
-        let signature = wallet
-            .sign_attribute(&context.registry, name, value.to_vec(), validity)
-            .await?;
 
-        let attr = context.registry.set_attribute_signed(
-            me.address(),
-            signature.v.try_into().unwrap(),
-            signature.r.into(),
-            signature.s.into(),
-            name,
-            value.into(),
-            validity,
-        );
-        attr.send().await?.await?;
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
 
         let doc = resolver
             .resolve_did(me.address(), None)
@@ -301,7 +287,7 @@ async fn test_revoke_installation() -> Result<(), Error> {
             .unwrap()
         );
 
-        let signature = wallet
+        let signature = me
             .sign_revoke_attribute(&context.registry, name, value.to_vec())
             .await?;
 
@@ -367,6 +353,164 @@ async fn test_balance() -> Result<(), Error> {
         );
         assert_eq!(balance.unit, Unit::Eth);
 
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_fetch_key_packages() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+        let name = *b"xmtp/installation/hex           ";
+        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await?;
+
+        assert_eq!(res.status, Status::Success);
+        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(
+            res.installation,
+            vec![
+                hex::decode(b"000000000000000000000000000000000000000000000000000000000000000000")
+                    .unwrap(),
+                hex::decode(b"111111111111111111111111111111111111111111111111111111111111111111")
+                    .unwrap()
+            ]
+        );
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+        let name = *b"xmtp/installation/hex           ";
+        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
+        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+
+        client
+            .revoke_installation(
+                format!("0x{}", hex::encode(me.address())),
+                XmtpAttribute {
+                    purpose: XmtpKeyPurpose::Installation,
+                    encoding: KeyEncoding::Hex,
+                },
+                value.to_vec(),
+                me.sign_revoke_attribute(&context.registry, name, value.to_vec())
+                    .await?,
+            )
+            .await?;
+
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await?;
+
+        assert_eq!(res.status, Status::Success);
+        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(
+            res.installation,
+            vec![hex::decode(
+                b"000000000000000000000000000000000000000000000000000000000000000000"
+            )
+            .unwrap()]
+        );
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_fetch_key_packages_client() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+        let attribute = XmtpAttribute {
+            purpose: XmtpKeyPurpose::Installation,
+            encoding: KeyEncoding::Hex,
+        };
+        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+
+        client
+            .grant_installation(
+                format!("0x{}", hex::encode(me.address())),
+                attribute.clone(),
+                value.to_vec(),
+                me.sign_attribute(
+                    &context.registry,
+                    attribute.into(),
+                    value.to_vec(),
+                    U256::from(DEFAULT_ATTRIBUTE_VALIDITY),
+                )
+                .await?,
+            )
+            .await?;
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await?;
+
+        assert_eq!(res.status, Status::Success);
+        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(
+            res.installation,
+            vec![hex::decode(
+                b"000000000000000000000000000000000000000000000000000000000000000000"
+            )
+            .unwrap()]
+        );
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_did_deactivation() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+
+        let new_owner = Address::from_str(NULL_ADDRESS).unwrap();
+        let signature = me.sign_owner(&context.registry, new_owner).await.unwrap();
+        let _ = context
+            .registry
+            .change_owner_signed(
+                me.address(),
+                signature.v.try_into().unwrap(),
+                signature.r.into(),
+                signature.s.into(),
+                new_owner,
+            )
+            .send()
+            .await?
+            .await?;
+
+        let res = client
+            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .await
+            .unwrap_err();
+
+        assert!(matches!(res, ClientError::Call(_)));
+        match res {
+            ClientError::Call(err) => {
+                assert_eq!(err.code(), -31999);
+                assert_eq!(
+                    err.message(),
+                    "The DID has been deactivated, and no longer valid"
+                );
+            }
+            _ => panic!("Expected a client error. this should never match"),
+        }
         Ok(())
     })
     .await
