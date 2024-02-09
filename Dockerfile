@@ -15,6 +15,8 @@ COPY --chown=xmtp:xmtp . .
 ENV PATH=~${USER}/.cargo/bin:$PATH
 ENV USER=xmtp
 
+RUN yamlfmt -lint .github/workflows/*.yml
+
 ENV CARGO_INCREMENTAL=${CARGO_INCREMENTAL:-1}
 RUN cargo check
 RUN cargo fmt --check
