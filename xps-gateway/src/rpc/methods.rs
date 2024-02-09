@@ -7,7 +7,7 @@ use super::api::*;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::{core::types::Signature, providers::Middleware};
-use gateway_types::{GrantInstallationResult, KeyPackageResult};
+use gateway_types::{GrantInstallationResult, KeyPackageResult, SendMessageResult};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use messaging::MessagingOperations;
@@ -44,7 +44,7 @@ impl<P: Middleware> XpsMethods<P> {
 
 #[async_trait]
 impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
-    async fn send_message(&self, message: Message) -> Result<(), ErrorObjectOwned> {
+    async fn send_message(&self, message: Message) -> Result<SendMessageResult, ErrorObjectOwned> {
         let result = self
             .message_operations
             .send_message(message)

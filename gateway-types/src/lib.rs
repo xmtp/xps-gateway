@@ -49,6 +49,13 @@ pub struct GrantInstallationResult {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct SendMessageResult {
+    pub status: Status,
+    pub message: String,
+    pub transaction: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct KeyPackageResult {
     /// Status of the operation
     pub status: Status,

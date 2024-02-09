@@ -11,7 +11,7 @@ use ethers::{
     types::H256,
     utils::keccak256,
 };
-use gateway_types::{error::ExtSignerError, Message};
+use gateway_types::{error::ExtSignerError, Message, SendMessageResult, Status};
 
 abigen!(
     Conversation,
@@ -32,8 +32,12 @@ where
         Self { contract }
     }
 
-    pub async fn send_message(&self, m: Message) -> Result<(), MessagingOperationError<M>> {
-        self.contract
+    pub async fn send_message(
+        &self,
+        m: Message,
+    ) -> Result<SendMessageResult, MessagingOperationError<M>> {
+        let transaction_receipt = self
+            .contract
             .send_message_signed(
                 m.conversation_id,
                 m.payload,
@@ -45,7 +49,11 @@ where
             .send()
             .await?
             .await?;
-        Ok(())
+        Ok(SendMessageResult {
+            status: Status::Success,
+            message: "Message sent.".to_string(),
+            transaction: transaction_receipt.unwrap().transaction_hash.to_string(),
+        })
     }
 }
 

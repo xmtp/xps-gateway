@@ -4,8 +4,8 @@ use ethers::core::types::Signature;
 use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::Message;
 use gateway_types::{GrantInstallationResult, KeyPackageResult};
+use gateway_types::{Message, SendMessageResult};
 use lib_didethresolver::types::XmtpAttribute;
 
 /// XPS JSON-RPC Interface Methods
@@ -131,7 +131,7 @@ pub trait Xps {
     /// }
     /// ```
     #[method(name = "sendMessage")]
-    async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned>;
+    async fn send_message(&self, _message: Message) -> Result<SendMessageResult, ErrorObjectOwned>;
 
     /// # Documentation for JSON RPC Endpoint: `grantInstallation`
     ///
