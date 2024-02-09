@@ -7,7 +7,10 @@ use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
 use ethers::prelude::*;
-use ethers::{core::types::Signature, providers::Middleware};
+use ethers::{
+    core::types::Signature,
+    providers::{Middleware, ProviderError},
+};
 use gateway_types::{GrantInstallationResult, Unit, WalletBalance};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
@@ -115,7 +118,7 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
             .provider()
             .get_balance(self.wallet.address(), None)
             .await
-            .unwrap();
+            .map_err::<RpcError<P>, _>(RpcError::from)?;
 
         // Return the balance in Ether as a WalletBalance object.
         Ok(WalletBalance {
@@ -131,12 +134,18 @@ enum RpcError<M: Middleware> {
     /// A public key parameter was invalid
     #[error(transparent)]
     ContactOperation(#[from] ContactOperationError<M>),
+    /// error occured while querying the balance.
+    #[error(transparent)]
+    BalanceOperation(#[from] ProviderError),
 }
 
 impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
     fn from(error: RpcError<M>) -> Self {
         match error {
             RpcError::ContactOperation(c) => {
+                ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
+            }
+            RpcError::BalanceOperation(c) => {
                 ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
             }
         }
