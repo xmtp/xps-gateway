@@ -122,4 +122,44 @@ mod tests {
         assert_eq!(format!("{}", Status::Success), "success");
         assert_eq!(format!("{}", Status::Failed), "failed");
     }
+
+    #[test]
+    fn test_wallet_balance_display() {
+        assert_eq!(
+            format!(
+                "{}",
+                WalletBalance {
+                    balance: U256::from(123456789),
+                    unit: Unit::Eth
+                }
+            ),
+            "0.000000000123456789 ETH"
+        );
+        assert_eq!(
+            format!(
+                "{}",
+                WalletBalance {
+                    balance: U256::from(987654321),
+                    unit: Unit::Eth
+                }
+            ),
+            "0.000000000987654321 ETH"
+        );
+        assert_eq!(
+            format!(
+                "{}",
+                WalletBalance {
+                    balance: U256::from(500),
+                    unit: Unit::Other("BTC".to_string())
+                }
+            ),
+            "500 BTC"
+        );
+    }
+
+    #[test]
+    fn test_unit_display() {
+        assert_eq!(format!("{}", Unit::Eth), "ETH");
+        assert_eq!(format!("{}", Unit::Other("ABC".to_string())), "ABC");
+    }
 }
