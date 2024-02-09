@@ -7,7 +7,7 @@ use super::api::*;
 use async_trait::async_trait;
 use ethers::prelude::*;
 use ethers::{core::types::Signature, providers::Middleware};
-use gateway_types::GrantInstallationResult;
+use gateway_types::{GrantInstallationResult, KeyPackageResult};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use messaging::MessagingOperations;
@@ -101,6 +101,16 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
 
     async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
         Ok(self.wallet.address())
+    }
+
+    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned> {
+        log::debug!("xps_fetchKeyPackages called");
+        let result = self
+            .contact_operations
+            .fetch_key_packages(did)
+            .await
+            .map_err(RpcError::from)?;
+        Ok(result)
     }
 }
 

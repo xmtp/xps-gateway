@@ -1,14 +1,8 @@
 [workspace]
 
-members = [
-  "xps-gateway",
-  "messaging",
-  "inbox",
-  "registry", 
-  "gateway-types",
-]
+members = ["xps-gateway", "messaging", "inbox", "registry", "gateway-types"]
 
-exclude = [ ]
+exclude = []
 
 # Make the feature resolver explicit.
 # See https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details
@@ -22,12 +16,12 @@ serde = "1.0"
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 async-trait = "0.1"
-jsonrpsee = { version = "0.21", features = ["macros", "server", "client-core"] }
+jsonrpsee = { version = "0.22", features = ["macros", "server", "client-core"] }
 anyhow = "1.0"
 thiserror = "1.0"
 ethers = { version = "2.0.11", features = ["abigen"] }
 ctor = "0.2"
-lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", package = "lib-didethresolver", branch = "main" }
+lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "main" }
 gateway-types = { path = "./gateway-types" }
 rustc-hex = "2.1"
 hex = "0.4"
