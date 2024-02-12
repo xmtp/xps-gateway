@@ -8,4 +8,6 @@ edition = "2021"
 [dependencies]
 serde.workspace = true
 lib-didethresolver.workspace = true
-ethers = { workspace = true, features = ["ws"] }
+ethers.workspace = true
+thiserror.workspace = true
+jsonrpsee.workspace = true
