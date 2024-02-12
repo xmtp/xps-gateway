@@ -6,8 +6,13 @@ use super::api::*;
 
 use async_trait::async_trait;
 use ethers::prelude::*;
-use ethers::{core::types::Signature, providers::Middleware};
-use gateway_types::{GrantInstallationResult, KeyPackageResult, SendMessageResult};
+use ethers::{
+    core::types::Signature,
+    providers::{Middleware, ProviderError},
+};
+use gateway_types::{
+    GrantInstallationResult, KeyPackageResult, SendMessageResult, Unit, WalletBalance,
+};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use messaging::MessagingOperations;
@@ -103,6 +108,34 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         Ok(self.wallet.address())
     }
 
+    /// Fetches the current balance of the wallet in Ether.
+    ///
+    /// This asynchronous method queries the Ethereum blockchain to get the current balance
+    /// of the associated wallet address, converting the result from wei (the smallest unit
+    /// of Ether) to Ether for more understandable reading.
+    ///
+    /// # Returns
+    /// - `Ok(WalletBalance)`: On success, returns a `WalletBalance` struct containing the
+    ///   wallet's balance formatted as a string in Ether, along with the unit "ETH".
+    /// - `Err(ErrorObjectOwned)`: On failure, returns an error object detailing why the
+    ///   balance could not be fetched or converted.
+    ///
+    async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned> {
+        // Fetch the balance in wei (the smallest unit of Ether) from the blockchain.
+        let wei_balance: U256 = self
+            .signer
+            .provider()
+            .get_balance(self.wallet.address(), None)
+            .await
+            .map_err::<RpcError<P>, _>(RpcError::from)?;
+
+        // Return the balance in Ether as a WalletBalance object.
+        Ok(WalletBalance {
+            balance: wei_balance,
+            unit: Unit::Eth,
+        })
+    }
+
     async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned> {
         log::debug!("xps_fetchKeyPackages called");
         let result = self
@@ -119,20 +152,20 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
 enum RpcError<M: Middleware> {
     /// A public key parameter was invalid
     #[error(transparent)]
-    ContactOperation(#[from] ContactOperationError<M>),
+    Contact(#[from] ContactOperationError<M>),
+    /// Error occurred while querying the balance.
     #[error(transparent)]
-    MessagingOperation(#[from] MessagingOperationError<M>),
+    Balance(#[from] ProviderError),
+    #[error(transparent)]
+    Messaging(#[from] MessagingOperationError<M>),
 }
 
 impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
     fn from(error: RpcError<M>) -> Self {
         match error {
-            RpcError::ContactOperation(c) => {
-                ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
-            }
-            RpcError::MessagingOperation(m) => {
-                ErrorObjectOwned::owned(-31999, m.to_string(), None::<()>)
-            }
+            RpcError::Contact(c) => ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>),
+            RpcError::Balance(c) => ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>),
+            RpcError::Messaging(m) => ErrorObjectOwned::owned(-31999, m.to_string(), None::<()>),
         }
     }
 }
