@@ -106,7 +106,7 @@ where
 
 async fn deploy_to_anvil(anvil: &AnvilInstance) -> (Address, Address) {
     let wallet: LocalWallet = anvil.keys()[0].clone().into();
-    let client = client(&anvil, wallet).await;
+    let client = client(anvil, wallet).await;
 
     let registry = DIDRegistry::deploy(client.clone(), ())
         .unwrap()
@@ -144,7 +144,7 @@ pub async fn get_user(
     index: usize,
 ) -> Arc<SignerMiddleware<Provider<Ws>, LocalWallet>> {
     let wallet: LocalWallet = anvil.keys()[index].clone().into();
-    client(&anvil, wallet).await
+    client(anvil, wallet).await
 }
 
 static INIT: Once = Once::new();

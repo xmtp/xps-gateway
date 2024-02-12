@@ -47,10 +47,10 @@ async fn test_send_message() -> Result<(), Error> {
             .await?;
 
         let message = Message {
-            conversation_id: conversation_id,
-            payload: payload,
+            conversation_id,
+            payload,
             identity: me.address(),
-            signature: signature,
+            signature,
         };
 
         let pre_nonce = context.conversation.nonce(me.address()).call().await?;
@@ -87,10 +87,10 @@ async fn test_send_message_fail() -> Result<(), Error> {
             .await?;
 
         let message = Message {
-            conversation_id: conversation_id,
-            payload: payload,
+            conversation_id,
+            payload,
             identity: me.address(),
-            signature: signature,
+            signature,
         };
 
         let pre_nonce = context.conversation.nonce(me.address()).call().await?;
