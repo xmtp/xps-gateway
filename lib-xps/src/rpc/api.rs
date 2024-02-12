@@ -4,9 +4,10 @@ use ethers::core::types::Signature;
 use ethers::prelude::*;
 use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
-use gateway_types::{GrantInstallationResult, KeyPackageResult, WalletBalance};
-use gateway_types::{Message, SendMessageResult};
 use lib_didethresolver::types::XmtpAttribute;
+use xps_types::{
+    GrantInstallationResult, KeyPackageResult, Message, SendMessageResult, WalletBalance,
+};
 
 /// XPS JSON-RPC Interface Methods
 #[rpc(server, client, namespace = "xps")]

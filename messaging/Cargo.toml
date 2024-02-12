@@ -13,4 +13,4 @@ async-trait.workspace = true
 ethers = { workspace = true, features = ["ws"] }
 serde.workspace = true
 thiserror.workspace = true
-gateway-types.workspace = true
+xps-types.workspace = true

@@ -19,8 +19,8 @@ RUN cargo clippy --all-features --no-deps -- -D warnings
 RUN cargo test --lib
 RUN cargo test --doc
 RUN cargo build --release
-RUN CARGO_TARGET_DIR=/build/target cargo install --root /xmtp --path xps-gateway --bin=xps_gateway
-RUN strip /xmtp/bin/xps_gateway
+RUN CARGO_TARGET_DIR=/build/target cargo install --root /xmtp --path xps --bin=xps
+RUN strip /xmtp/bin/xps
 RUN cp CHANGELOG.md /xmtp/
 RUN cp LICENSE /xmtp/
 
@@ -44,11 +44,11 @@ EXPOSE 8080
 ENV USER=none
 USER none
 
-CMD ["/xmtp/bin/xps_gateway", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["/xmtp/bin/xps", "--host", "0.0.0.0", "--port", "8080"]
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.name="xps-gateway" \
-    org.label-schema.description="xps-gateway" \
+    org.label-schema.name="xps" \
+    org.label-schema.description="xps" \
     org.label-schema.url="https://github.com/xmtp/xps-gateway" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-url="git@github.com:xmtp/xps-gateway.git" \

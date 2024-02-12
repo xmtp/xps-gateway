@@ -8,7 +8,7 @@ RUN sudo apt update && sudo apt install -y pkg-config openssl libssl-dev
 
 COPY --from=ghcr.io/xmtp/foundry:latest /usr/local/bin/anvil /usr/local/bin/anvil
 
-ARG PROJECT=xps-gateway
+ARG PROJECT=xps
 WORKDIR /workspaces/${PROJECT}
 COPY --chown=xmtp:xmtp . .
 
@@ -22,8 +22,8 @@ RUN cargo check
 RUN cargo fmt --check
 RUN cargo clippy --all-features --no-deps -- -D warnings
 RUN cargo test --workspace --all-features
-RUN CARGO_TARGET_DIR=/workspaces/${PROJECT}/target cargo install --path xps-gateway --bin=xps_gateway --root=~${USER}/.cargo/
-RUN valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ~${USER}/.cargo/bin/xps_gateway --help
+RUN CARGO_TARGET_DIR=/workspaces/${PROJECT}/target cargo install --path xps --bin=xps --root=~${USER}/.cargo/
+RUN valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ~${USER}/.cargo/bin/xps --help
 
 CMD RUST_LOG=info cargo run -- --host 0.0.0.0 --port 8080
 

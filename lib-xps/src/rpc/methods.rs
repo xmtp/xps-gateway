@@ -10,17 +10,16 @@ use ethers::{
     core::types::Signature,
     providers::{Middleware, ProviderError},
 };
-use gateway_types::{
-    GrantInstallationResult, KeyPackageResult, SendMessageResult, Unit, WalletBalance,
-};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use messaging::MessagingOperations;
 use rand::{rngs::StdRng, SeedableRng};
 use std::sync::Arc;
 use thiserror::Error;
+use xps_types::{
+    GrantInstallationResult, KeyPackageResult, Message, SendMessageResult, Unit, WalletBalance,
+};
 
-use gateway_types::Message;
 use messaging::error::MessagingOperationError;
 use registry::{error::ContactOperationError, ContactOperations};
 

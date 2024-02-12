@@ -11,7 +11,7 @@ use ethers::{
     types::H256,
     utils::keccak256,
 };
-use gateway_types::{error::ExtSignerError, Message, SendMessageResult, Status};
+use xps_types::{error::ExtSignerError, Message, SendMessageResult, Status};
 
 abigen!(
     Conversation,

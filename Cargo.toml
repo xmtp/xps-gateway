@@ -1,6 +1,12 @@
 [workspace]
-
-members = ["xps-gateway", "messaging", "inbox", "registry", "gateway-types"]
+members = [
+  "xps",
+  "lib-xps",
+  "messaging",
+  "inbox",
+  "registry", 
+  "xps-types", 
+]
 
 exclude = []
 
@@ -22,6 +28,6 @@ thiserror = "1.0"
 ethers = { version = "2.0.11", features = ["abigen"] }
 ctor = "0.2"
 lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "main" }
-gateway-types = { path = "./gateway-types" }
+xps-types = { path = "./xps-types" }
 rustc-hex = "2.1"
 hex = "0.4"

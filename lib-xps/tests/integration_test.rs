@@ -8,15 +8,15 @@ use ethers::providers::Middleware;
 use ethers::types::{Address, Bytes, TransactionRequest, U256};
 use ethers::utils::keccak256;
 use ethers::{signers::LocalWallet, signers::Signer};
-use gateway_types::{Message, Status, Unit};
 use integration_util::*;
 use jsonrpsee::core::ClientError;
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
     types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
 };
+use lib_xps::rpc::{XpsClient, DEFAULT_ATTRIBUTE_VALIDITY};
 use messaging::ConversationSignerExt;
-use xps_gateway::rpc::{XpsClient, DEFAULT_ATTRIBUTE_VALIDITY};
+use xps_types::{Message, Status, Unit};
 
 #[tokio::test]
 async fn test_say_hello() -> Result<(), Error> {
