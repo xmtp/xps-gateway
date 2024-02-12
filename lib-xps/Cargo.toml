@@ -24,10 +24,10 @@ hex.workspace = true
 rand = "0.8.5"
 tokio-stream = { version = "0.1", features = ["net"] }
 registry = { path = "../registry" }
+messaging = { path = "../messaging" }
 
 [dev-dependencies]
-jsonrpsee = { workspace = true, features = ["macros", "server", "client"]}
-tokio = { workspace = true, features = ["macros", "rt", "time"]}
+jsonrpsee = { workspace = true, features = ["macros", "server", "client"] }
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
 futures = "0.3"
 serde_json.workspace = true
-

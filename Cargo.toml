@@ -1,5 +1,4 @@
 [workspace]
-
 members = [
   "xps",
   "lib-xps",
@@ -9,7 +8,7 @@ members = [
   "xps-types", 
 ]
 
-exclude = [ ]
+exclude = []
 
 # Make the feature resolver explicit.
 # See https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details

@@ -3,18 +3,26 @@
 use crate::types::{GatewayContext, GatewaySigner};
 
 use super::api::*;
-use jsonrpsee::types::error::ErrorCode;
 
 use async_trait::async_trait;
 use ethers::prelude::*;
-use ethers::{core::types::Signature, providers::Middleware};
+use ethers::{
+    core::types::Signature,
+    providers::{Middleware, ProviderError},
+};
+use gateway_types::{
+    GrantInstallationResult, KeyPackageResult, SendMessageResult, Unit, WalletBalance,
+};
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
+use messaging::MessagingOperations;
 use rand::{rngs::StdRng, SeedableRng};
 use std::sync::Arc;
 use thiserror::Error;
 use xps_types::{GrantInstallationResult, KeyPackageResult};
 
+use gateway_types::Message;
+use messaging::error::MessagingOperationError;
 use registry::{error::ContactOperationError, ContactOperations};
 use xps_types::Message;
 
@@ -24,6 +32,7 @@ pub const DEFAULT_ATTRIBUTE_VALIDITY: u64 = 60 * 60 * 24 * 365;
 
 /// Gateway Methods for XPS
 pub struct XpsMethods<P: Middleware + 'static> {
+    message_operations: MessagingOperations<GatewaySigner<P>>,
     contact_operations: ContactOperations<GatewaySigner<P>>,
     pub wallet: LocalWallet,
     pub signer: Arc<GatewaySigner<P>>,
@@ -32,6 +41,7 @@ pub struct XpsMethods<P: Middleware + 'static> {
 impl<P: Middleware> XpsMethods<P> {
     pub fn new(context: &GatewayContext<P>) -> Self {
         Self {
+            message_operations: MessagingOperations::new(context.conversation.clone()),
             contact_operations: ContactOperations::new(context.registry.clone()),
             wallet: LocalWallet::new(&mut StdRng::from_entropy()),
             signer: context.signer.clone(),
@@ -41,10 +51,14 @@ impl<P: Middleware> XpsMethods<P> {
 
 #[async_trait]
 impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
-    async fn send_message(&self, _message: Message) -> Result<(), ErrorObjectOwned> {
-        //TODO: Stub for sendMessage, ref: [discussion](https://github.com/xmtp/xps-gateway/discussions/11)
-        log::debug!("xps_sendMessage called");
-        Err(ErrorCode::MethodNotFound.into())
+    async fn send_message(&self, message: Message) -> Result<SendMessageResult, ErrorObjectOwned> {
+        let result = self
+            .message_operations
+            .send_message(message)
+            .await
+            .map_err(RpcError::from)?;
+
+        Ok(result)
     }
 
     async fn status(&self) -> Result<String, ErrorObjectOwned> {
@@ -96,6 +110,34 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         Ok(self.wallet.address())
     }
 
+    /// Fetches the current balance of the wallet in Ether.
+    ///
+    /// This asynchronous method queries the Ethereum blockchain to get the current balance
+    /// of the associated wallet address, converting the result from wei (the smallest unit
+    /// of Ether) to Ether for more understandable reading.
+    ///
+    /// # Returns
+    /// - `Ok(WalletBalance)`: On success, returns a `WalletBalance` struct containing the
+    ///   wallet's balance formatted as a string in Ether, along with the unit "ETH".
+    /// - `Err(ErrorObjectOwned)`: On failure, returns an error object detailing why the
+    ///   balance could not be fetched or converted.
+    ///
+    async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned> {
+        // Fetch the balance in wei (the smallest unit of Ether) from the blockchain.
+        let wei_balance: U256 = self
+            .signer
+            .provider()
+            .get_balance(self.wallet.address(), None)
+            .await
+            .map_err::<RpcError<P>, _>(RpcError::from)?;
+
+        // Return the balance in Ether as a WalletBalance object.
+        Ok(WalletBalance {
+            balance: wei_balance,
+            unit: Unit::Eth,
+        })
+    }
+
     async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned> {
         log::debug!("xps_fetchKeyPackages called");
         let result = self
@@ -112,15 +154,20 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
 enum RpcError<M: Middleware> {
     /// A public key parameter was invalid
     #[error(transparent)]
-    ContactOperation(#[from] ContactOperationError<M>),
+    Contact(#[from] ContactOperationError<M>),
+    /// Error occurred while querying the balance.
+    #[error(transparent)]
+    Balance(#[from] ProviderError),
+    #[error(transparent)]
+    Messaging(#[from] MessagingOperationError<M>),
 }
 
 impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
     fn from(error: RpcError<M>) -> Self {
         match error {
-            RpcError::ContactOperation(c) => {
-                ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
-            }
+            RpcError::Contact(c) => ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>),
+            RpcError::Balance(c) => ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>),
+            RpcError::Messaging(m) => ErrorObjectOwned::owned(-31999, m.to_string(), None::<()>),
         }
     }
 }

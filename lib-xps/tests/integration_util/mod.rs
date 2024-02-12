@@ -19,6 +19,7 @@ use lib_didethresolver::{
     did_registry::{DIDRegistry, RegistrySignerExt},
     Resolver,
 };
+use messaging::Conversation;
 use std::{
     future::Future,
     sync::{Arc, Once},
@@ -50,14 +51,15 @@ where
     init_test_logging();
     let anvil = Anvil::new().args(vec!["--base-fee", "100"]).spawn();
     log::debug!("Anvil spawned at {}", anvil.ws_endpoint());
-    let registry_address = deploy_to_anvil(&anvil).await;
-    log::debug!("Contract deployed at {}", registry_address);
+    let (registry_address, conversation_address) = deploy_to_anvil(&anvil).await;
+    log::debug!("Registry contract deployed at {}", registry_address);
+    log::debug!("Conversation contract deployed at {}", conversation_address);
     let provider = Provider::<Ws>::connect(anvil.ws_endpoint())
         .await
         .unwrap()
         .interval(std::time::Duration::from_millis(10u64));
 
-    let context = GatewayContext::new(registry_address, provider).await?;
+    let context = GatewayContext::new(registry_address, conversation_address, provider).await?;
 
     let accounts = context.signer.get_accounts().await?;
     let from = accounts[0];
@@ -102,9 +104,9 @@ where
     }
 }
 
-async fn deploy_to_anvil(anvil: &AnvilInstance) -> Address {
+async fn deploy_to_anvil(anvil: &AnvilInstance) -> (Address, Address) {
     let wallet: LocalWallet = anvil.keys()[0].clone().into();
-    let client = client(&anvil, wallet).await;
+    let client = client(anvil, wallet).await;
 
     let registry = DIDRegistry::deploy(client.clone(), ())
         .unwrap()
@@ -113,7 +115,14 @@ async fn deploy_to_anvil(anvil: &AnvilInstance) -> Address {
         .await
         .unwrap();
 
-    registry.address()
+    let conversation = Conversation::deploy(client.clone(), ())
+        .unwrap()
+        .gas_price(100)
+        .send()
+        .await
+        .unwrap();
+
+    (registry.address(), conversation.address())
 }
 
 async fn client(
@@ -135,7 +144,7 @@ pub async fn get_user(
     index: usize,
 ) -> Arc<SignerMiddleware<Provider<Ws>, LocalWallet>> {
     let wallet: LocalWallet = anvil.keys()[index].clone().into();
-    client(&anvil, wallet).await
+    client(anvil, wallet).await
 }
 
 static INIT: Once = Once::new();

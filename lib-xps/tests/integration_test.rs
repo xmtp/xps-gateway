@@ -4,18 +4,19 @@ use std::str::FromStr;
 
 use anyhow::Error;
 
+use ethers::providers::Middleware;
+use ethers::types::{Address, Bytes, TransactionRequest, U256};
+use ethers::utils::keccak256;
 use ethers::{signers::LocalWallet, signers::Signer};
+use gateway_types::{Message, Status, Unit};
+use integration_util::*;
 use jsonrpsee::core::ClientError;
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
     types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
 };
-use lib_xps::rpc::*;
-
-use ethers::types::{Address, U256};
-use xps_types::{Message, Status};
-
-use integration_util::*;
+use messaging::ConversationSignerExt;
+use xps_gateway::rpc::{XpsClient, DEFAULT_ATTRIBUTE_VALIDITY};
 
 #[tokio::test]
 async fn test_say_hello() -> Result<(), Error> {
@@ -28,17 +29,80 @@ async fn test_say_hello() -> Result<(), Error> {
 }
 
 #[tokio::test]
-async fn test_fail_send_message() -> Result<(), Error> {
-    with_xps_client(None, |client, _, _, _| async move {
+async fn test_send_message() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _resolver, anvil| async move {
+        let wallet: LocalWallet = anvil.keys()[3].clone().into();
+        let me = get_user(&anvil, 3).await;
+
+        let conversation_id = keccak256(b"conversation_id");
+        let payload = Bytes::from_static(b"payload");
+
+        let signature = wallet
+            .sign_xmtp_message(
+                &context.conversation,
+                conversation_id,
+                payload.clone(),
+                me.address(),
+            )
+            .await?;
+
         let message = Message {
-            conversation_id: (b"abcdefg").to_vec(),
-            payload: (b"Hello World").to_vec(),
-            v: vec![],
-            r: vec![],
-            s: vec![],
+            conversation_id,
+            payload,
+            identity: me.address(),
+            signature,
         };
+
+        let pre_nonce = context.conversation.nonce(me.address()).call().await?;
+        assert!(pre_nonce == U256::zero());
+
+        let result = client.send_message(message).await;
+        assert!(result.is_ok());
+        assert!(result.unwrap().status == Status::Success);
+
+        // post-nonce should be same as pre-nonce + 1
+        let post_nonce = context.conversation.nonce(me.address()).call().await?;
+        assert!(post_nonce == pre_nonce + 1);
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_send_message_fail() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _resolver, anvil| async move {
+        let wallet: LocalWallet = anvil.keys()[3].clone().into();
+        let me = get_user(&anvil, 3).await;
+
+        let conversation_id = keccak256(b"conversation_id");
+        let payload = Bytes::from_static(b"payload");
+
+        let signature = wallet
+            .sign_xmtp_message(
+                &context.conversation,
+                keccak256(b"unmatched_conversation_id"),
+                payload.clone(),
+                me.address(),
+            )
+            .await?;
+
+        let message = Message {
+            conversation_id,
+            payload,
+            identity: me.address(),
+            signature,
+        };
+
+        let pre_nonce = context.conversation.nonce(me.address()).call().await?;
+        assert!(pre_nonce == U256::zero());
+
         let result = client.send_message(message).await;
         assert!(result.is_err());
+        println!("{:?}", result.err());
+
+        // post-nonce should be same as pre-nonce
+        let post_nonce = context.conversation.nonce(me.address()).call().await?;
+        assert!(post_nonce == pre_nonce);
         Ok(())
     })
     .await
@@ -312,8 +376,6 @@ async fn test_revoke_installation() -> Result<(), Error> {
             .unwrap()
             .document;
 
-        log::debug!("{}", serde_json::to_string_pretty(&doc).unwrap());
-
         assert_eq!(
             doc.verification_method[0].id,
             DidUrl::parse(format!(
@@ -323,6 +385,36 @@ async fn test_revoke_installation() -> Result<(), Error> {
             .unwrap()
         );
         assert_eq!(doc.verification_method.len(), 1);
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_balance() -> Result<(), Error> {
+    with_xps_client(None, |client, context, _resolver, _anvil| async move {
+        // by default, we have no balance. verify that.
+        let mut balance = client.balance().await?;
+        assert_eq!(balance.balance, U256::from(0));
+        assert_eq!(balance.unit, Unit::Eth);
+
+        // fund the wallet account.
+        let accounts = context.signer.get_accounts().await?;
+        let from = accounts[1];
+        let tx = TransactionRequest::new()
+            .to(client.wallet_address().await?)
+            .value(5_000_000_000_000_000_000_000_u128)
+            .from(from);
+        context.signer.send_transaction(tx, None).await?.await?;
+
+        // check to see if the balance gets updated.
+        balance = client.balance().await?;
+        assert_eq!(
+            balance.balance,
+            U256::from(5_000_000_000_000_000_000_000_u128)
+        );
+        assert_eq!(balance.unit, Unit::Eth);
 
         Ok(())
     })
@@ -355,7 +447,6 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
                     .unwrap()
             ]
         );
-
         Ok(())
     })
     .await
