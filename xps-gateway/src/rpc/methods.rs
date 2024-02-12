@@ -152,26 +152,20 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
 enum RpcError<M: Middleware> {
     /// A public key parameter was invalid
     #[error(transparent)]
-    ContactOperation(#[from] ContactOperationError<M>),
-    /// error occured while querying the balance.
+    Contact(#[from] ContactOperationError<M>),
+    /// Error occurred while querying the balance.
     #[error(transparent)]
-    BalanceOperation(#[from] ProviderError),
+    Balance(#[from] ProviderError),
     #[error(transparent)]
-    MessagingOperation(#[from] MessagingOperationError<M>),
+    Messaging(#[from] MessagingOperationError<M>),
 }
 
 impl<M: Middleware> From<RpcError<M>> for ErrorObjectOwned {
     fn from(error: RpcError<M>) -> Self {
         match error {
-            RpcError::ContactOperation(c) => {
-                ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
-            }
-            RpcError::BalanceOperation(c) => {
-                ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>)
-            }
-            RpcError::MessagingOperation(m) => {
-                ErrorObjectOwned::owned(-31999, m.to_string(), None::<()>)
-            }
+            RpcError::Contact(c) => ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>),
+            RpcError::Balance(c) => ErrorObjectOwned::owned(-31999, c.to_string(), None::<()>),
+            RpcError::Messaging(m) => ErrorObjectOwned::owned(-31999, m.to_string(), None::<()>),
         }
     }
 }
