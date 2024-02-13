@@ -36,7 +36,14 @@ use lib_xps::{
 const TEST_TIMEOUT: Duration = Duration::from_secs(20);
 pub const SERVER_HOST: &str = "127.0.0.1";
 
-pub async fn with_xps_client<F, R, T>(timeout: Option<Duration>, f: F) -> Result<T, Error>
+/// Run a test with an XPS client
+/// If `with_balance` is provided, the gateway signer will be funded with the given balance
+/// If `with_balance` is not provided, the gateway signer will be funded with 5_000_000_000_000_000_000_000 wei
+pub async fn with_xps_client<F, R, T>(
+    timeout: Option<Duration>,
+    with_balance: Option<U256>,
+    f: F,
+) -> Result<T, Error>
 where
     F: FnOnce(
             WsClient,
@@ -61,17 +68,19 @@ where
 
     let context = GatewayContext::new(registry_address, conversation_address, provider).await?;
 
+    // transfer balance to the gateway signer so that we may be able to send transactions
     let accounts = context.signer.get_accounts().await?;
     let from = accounts[0];
     let tx = TransactionRequest::new()
         .to(context.signer.address())
-        .value(5_000_000_000_000_000_000_000_u128)
+        .value(with_balance.unwrap_or(U256::from(5_000_000_000_000_000_000_000_u128)))
         .from(from);
     context.signer.send_transaction(tx, None).await?.await?;
     let balance = context
         .signer
         .get_balance(context.signer.address(), None)
         .await?;
+
     log::debug!("Gateway Balance is {}", balance);
 
     let resolver = Resolver::new(context.signer.clone(), registry_address)
