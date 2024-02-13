@@ -68,7 +68,7 @@ where
 
     let context = GatewayContext::new(registry_address, conversation_address, provider).await?;
 
-    // transfer balance to the gateway signer so that we may be able to send transactions
+    // transfer balance to the gateway signer so that we may be able to send & pay for transactions to anvil
     let accounts = context.signer.get_accounts().await?;
     let from = accounts[0];
     let tx = TransactionRequest::new()
