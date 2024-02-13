@@ -11,8 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
 /// Address of the did:ethr Registry on Sepolia
-// pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
-pub const DID_ETH_REGISTRY: &str = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
 // Address of the Conversation on Sepolia
 pub const CONVERSATION: &str = "0x15aE865d0645816d8EEAB0b7496fdd24227d1801";
 
