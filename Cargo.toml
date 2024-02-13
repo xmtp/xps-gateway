@@ -5,7 +5,7 @@ members = [
   "messaging",
   "inbox",
   "registry", 
-  "xps-types", 
+  "xps-types", "bin/registry-localnet", 
 ]
 
 exclude = []

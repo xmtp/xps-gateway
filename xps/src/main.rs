@@ -9,12 +9,18 @@ struct Args {
     port: u16,
     #[arg(short = 's', long = "host", default_value = "127.0.0.1")]
     host: String,
+    #[arg(
+        short = 'e',
+        long = "endpoint",
+        default_value = "wss://ethereum-sepolia.publicnode.com"
+    )]
+    endpoint: String,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
-    crate::run(args.host, args.port).await?;
+    crate::run(args.host, args.port, args.endpoint).await?;
     Ok(())
 }
 
@@ -60,6 +66,15 @@ mod tests {
         let args = Args::parse_from(arg_list);
         assert_eq!(args.port, 0);
         assert_eq!(args.host, "127.0.0.1");
+        assert_eq!(args.endpoint, "wss://ethereum-sepolia.publicnode.com");
+        Ok(())
+    }
+
+    #[test]
+    fn test_endpoint() -> Result<()> {
+        let arg_list = vec!["xps", "--endpoint", "http://localhost:8545"];
+        let args = Args::parse_from(arg_list);
+        assert_eq!(args.endpoint, "http://localhost:8545");
         Ok(())
     }
 }
