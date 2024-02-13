@@ -2977,8 +2977,6 @@ dependencies = [
  "hex",
  "lib-didethresolver",
  "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
