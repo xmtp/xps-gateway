@@ -13,7 +13,6 @@ use ethers::{
 use jsonrpsee::types::ErrorObjectOwned;
 use lib_didethresolver::types::XmtpAttribute;
 use messaging::MessagingOperations;
-use rand::{rngs::StdRng, SeedableRng};
 use std::sync::Arc;
 use thiserror::Error;
 use xps_types::{
@@ -31,7 +30,6 @@ pub const DEFAULT_ATTRIBUTE_VALIDITY: u64 = 60 * 60 * 24 * 365;
 pub struct XpsMethods<P: Middleware + 'static> {
     message_operations: MessagingOperations<GatewaySigner<P>>,
     contact_operations: ContactOperations<GatewaySigner<P>>,
-    pub wallet: LocalWallet,
     pub signer: Arc<GatewaySigner<P>>,
 }
 
@@ -40,7 +38,6 @@ impl<P: Middleware> XpsMethods<P> {
         Self {
             message_operations: MessagingOperations::new(context.conversation.clone()),
             contact_operations: ContactOperations::new(context.registry.clone()),
-            wallet: LocalWallet::new(&mut StdRng::from_entropy()),
             signer: context.signer.clone(),
         }
     }
@@ -81,8 +78,10 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
                 signature,
                 U256::from(DEFAULT_ATTRIBUTE_VALIDITY),
             )
-            .await
-            .map_err(RpcError::from)?;
+            .await;
+
+        log::debug!("{:?}", result);
+        let result = result.map_err(RpcError::from)?;
 
         Ok(result)
     }
@@ -104,7 +103,8 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
     }
 
     async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned> {
-        Ok(self.wallet.address())
+        log::debug!("xps_walletAddress called");
+        Ok(self.signer.signer().address())
     }
 
     /// Fetches the current balance of the wallet in Ether.
@@ -120,11 +120,12 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
     ///   balance could not be fetched or converted.
     ///
     async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned> {
+        log::debug!("xps_balance called");
         // Fetch the balance in wei (the smallest unit of Ether) from the blockchain.
         let wei_balance: U256 = self
             .signer
             .provider()
-            .get_balance(self.wallet.address(), None)
+            .get_balance(self.signer.signer().address(), None)
             .await
             .map_err::<RpcError<P>, _>(RpcError::from)?;
 

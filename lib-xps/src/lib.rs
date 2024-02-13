@@ -15,7 +15,7 @@ pub use crate::rpc::{XpsClient, XpsMethods, XpsServer};
 use crate::types::GatewayContext;
 
 /// Entrypoint for the xps Gateway
-pub async fn run(host: String, port: u16) -> Result<()> {
+pub async fn run<P: AsRef<str>>(host: String, port: u16, provider: P) -> Result<()> {
     crate::util::init_logging();
 
     let server_addr = format!("{}:{}", host, port);
@@ -26,9 +26,7 @@ pub async fn run(host: String, port: u16) -> Result<()> {
 
     let registry_contract = Address::from_str(DID_ETH_REGISTRY)?;
     let conversation_contract = Address::from_str(CONVERSATION)?;
-    let provider = Provider::<Ws>::connect("wss://ethereum-sepolia.publicnode.com")
-        .await
-        .unwrap();
+    let provider = Provider::<Ws>::connect(provider.as_ref()).await.unwrap();
 
     let context = GatewayContext::new(registry_contract, conversation_contract, provider).await?;
     let xps_methods = rpc::XpsMethods::new(&context);

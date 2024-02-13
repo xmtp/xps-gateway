@@ -108,10 +108,20 @@ where
             .send()
             .await?
             .await?;
+
+        if let Some(ref receipt) = transaction_receipt {
+            log::debug!(
+                "Gas Used by transaction {}, Gas used in block {}, effective_price {}",
+                receipt.gas_used.unwrap_or(0.into()),
+                receipt.cumulative_gas_used,
+                receipt.effective_gas_price.unwrap_or(0.into())
+            );
+        }
+
         Ok(GrantInstallationResult {
             status: Status::Success,
             message: "Installation request complete.".to_string(),
-            transaction: transaction_receipt.unwrap().transaction_hash.to_string(),
+            transaction: transaction_receipt.map(|r| r.transaction_hash),
         })
     }
 
@@ -130,7 +140,8 @@ where
             String::from_utf8_lossy(&attribute)
         );
 
-        self.registry
+        let transaction_receipt = self
+            .registry
             .revoke_attribute_signed(
                 address,
                 signature.v.try_into()?,
@@ -142,6 +153,15 @@ where
             .send()
             .await?
             .await?;
+
+        if let Some(ref receipt) = transaction_receipt {
+            log::debug!(
+                "Gas Used by transaction {}, Gas used in block {}, effective_price {}",
+                receipt.gas_used.unwrap_or(0.into()),
+                receipt.cumulative_gas_used,
+                receipt.effective_gas_price.unwrap_or(0.into())
+            );
+        }
 
         Ok(())
     }

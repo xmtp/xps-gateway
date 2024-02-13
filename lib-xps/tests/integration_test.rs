@@ -20,7 +20,7 @@ use xps_types::{Message, Status, Unit};
 
 #[tokio::test]
 async fn test_say_hello() -> Result<(), Error> {
-    with_xps_client(None, |client, _, _, _| async move {
+    with_xps_client(None, None, |client, _, _, _| async move {
         let result = client.status().await?;
         assert_eq!(result, "OK");
         Ok(())
@@ -30,7 +30,7 @@ async fn test_say_hello() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_send_message() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _resolver, anvil| async move {
+    with_xps_client(None, None, |client, context, _resolver, anvil| async move {
         let wallet: LocalWallet = anvil.keys()[3].clone().into();
         let me = get_user(&anvil, 3).await;
 
@@ -70,7 +70,7 @@ async fn test_send_message() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_send_message_fail() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _resolver, anvil| async move {
+    with_xps_client(None, None, |client, context, _resolver, anvil| async move {
         let wallet: LocalWallet = anvil.keys()[3].clone().into();
         let me = get_user(&anvil, 3).await;
 
@@ -110,7 +110,7 @@ async fn test_send_message_fail() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_wallet_address() -> Result<(), Error> {
-    with_xps_client(None, |client, _, _, _| async move {
+    with_xps_client(None, None, |client, _, _, _| async move {
         let result = client.wallet_address().await?;
         assert_ne!(result, Address::zero());
         Ok(())
@@ -120,7 +120,7 @@ async fn test_wallet_address() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_grant_revoke() -> Result<(), Error> {
-    with_xps_client(None, |client, context, resolver, anvil| async move {
+    with_xps_client(None, None, |client, context, resolver, anvil| async move {
         for (key_index, key) in anvil.keys().iter().enumerate() {
             let wallet: LocalWallet = key.clone().into();
             let me = get_user(&anvil, key_index).await;
@@ -211,7 +211,7 @@ async fn test_grant_revoke() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_grant_installation() -> Result<(), Error> {
-    with_xps_client(None, |client, context, resolver, anvil| async move {
+    with_xps_client(None, None, |client, context, resolver, anvil| async move {
         let keys = anvil.keys();
         let wallet: LocalWallet = keys[3].clone().into();
         let me = get_user(&anvil, 3).await;
@@ -331,7 +331,7 @@ async fn test_grant_installation() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_revoke_installation() -> Result<(), Error> {
-    with_xps_client(None, |client, context, resolver, anvil| async move {
+    with_xps_client(None, None, |client, context, resolver, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
         let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
@@ -393,37 +393,41 @@ async fn test_revoke_installation() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_balance() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _resolver, _anvil| async move {
-        // by default, we have no balance. verify that.
-        let mut balance = client.balance().await?;
-        assert_eq!(balance.balance, U256::from(0));
-        assert_eq!(balance.unit, Unit::Eth);
+    with_xps_client(
+        None,
+        Some(0.into()),
+        |client, context, _resolver, _anvil| async move {
+            // by default, we have no balance. verify that.
+            let mut balance = client.balance().await?;
+            assert_eq!(balance.balance, U256::from(0));
+            assert_eq!(balance.unit, Unit::Eth);
 
-        // fund the wallet account.
-        let accounts = context.signer.get_accounts().await?;
-        let from = accounts[1];
-        let tx = TransactionRequest::new()
-            .to(client.wallet_address().await?)
-            .value(5_000_000_000_000_000_000_000_u128)
-            .from(from);
-        context.signer.send_transaction(tx, None).await?.await?;
+            // fund the wallet account.
+            let accounts = context.signer.get_accounts().await?;
+            let from = accounts[1];
+            let tx = TransactionRequest::new()
+                .to(client.wallet_address().await?)
+                .value(5_000_000_000_000_000_000_000_u128)
+                .from(from);
+            context.signer.send_transaction(tx, None).await?.await?;
 
-        // check to see if the balance gets updated.
-        balance = client.balance().await?;
-        assert_eq!(
-            balance.balance,
-            U256::from(5_000_000_000_000_000_000_000_u128)
-        );
-        assert_eq!(balance.unit, Unit::Eth);
+            // check to see if the balance gets updated.
+            balance = client.balance().await?;
+            assert_eq!(
+                balance.balance,
+                U256::from(5_000_000_000_000_000_000_000_u128)
+            );
+            assert_eq!(balance.unit, Unit::Eth);
 
-        Ok(())
-    })
+            Ok(())
+        },
+    )
     .await
 }
 
 #[tokio::test]
 async fn test_fetch_key_packages() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _, anvil| async move {
+    with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
         let value = b"000000000000000000000000000000000000000000000000000000000000000000";
@@ -454,7 +458,7 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _, anvil| async move {
+    with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
         let value = b"000000000000000000000000000000000000000000000000000000000000000000";
@@ -497,7 +501,7 @@ async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_fetch_key_packages_client() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _, anvil| async move {
+    with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let attribute = XmtpAttribute {
             purpose: XmtpKeyPurpose::Installation,
@@ -540,7 +544,7 @@ async fn test_fetch_key_packages_client() -> Result<(), Error> {
 
 #[tokio::test]
 async fn test_did_deactivation() -> Result<(), Error> {
-    with_xps_client(None, |client, context, _, anvil| async move {
+    with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
 
         let new_owner = Address::from_str(NULL_ADDRESS).unwrap();

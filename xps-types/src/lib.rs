@@ -2,8 +2,8 @@
 
 pub mod error;
 
-use ethers::types::U256;
 use ethers::types::{Address, Bytes as EthersBytes, Signature};
+use ethers::types::{H256, U256};
 use ethers::utils::format_units;
 use std::fmt;
 
@@ -11,8 +11,9 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
 /// Address of the did:ethr Registry on Sepolia
-pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
-// Address of the Converstion on Sepolia
+// pub const DID_ETH_REGISTRY: &str = "0xd1D374DDE031075157fDb64536eF5cC13Ae75000";
+pub const DID_ETH_REGISTRY: &str = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+// Address of the Conversation on Sepolia
 pub const CONVERSATION: &str = "0x15aE865d0645816d8EEAB0b7496fdd24227d1801";
 
 /// A message sent to a conversation
@@ -49,7 +50,7 @@ pub type Bytes = Vec<u8>;
 pub struct GrantInstallationResult {
     pub status: Status,
     pub message: String,
-    pub transaction: String,
+    pub transaction: Option<H256>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
