@@ -24,7 +24,7 @@ const VALIDITY: u64 = 60 * 60 * 24 * 365;
 /// A simple CLI to interact with the XPS Gateway
 pub struct App {
     /// the HTTPS network RPC-URL to interact with
-    /// By-default, `https://ethereum-sepolia.publicnode.com`
+    /// (default: `https://ethereum-sepolia.publicnode.com`)
     #[argh(
         short = 'n',
         option,
@@ -43,8 +43,8 @@ pub struct App {
 
     /// path to a local JSON wallet. Ensure usage of a test wallet, the
     /// security of this binary has not been verified. Use at your own risk. (default:
-    /// `./wallet.json`)
-    #[argh(short = 'w', option, default = "PathBuf::from(\"./wallet.json\")")]
+    /// `./keyfile.json`)
+    #[argh(short = 'w', option, default = "PathBuf::from(\"./keyfile.json\")")]
     wallet: PathBuf,
 
     /// URL of the XPS gateway. Default `ws://localhost:9944`
