@@ -27,7 +27,7 @@ anyhow = "1.0"
 thiserror = "1.0"
 ethers = { version = "2.0.11", features = ["abigen"] }
 ctor = "0.2"
-lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "insipx/xps-timestamp" }
+lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "insipx/byte-conversions" }
 xps-types = { path = "./xps-types" }
 rustc-hex = "2.1"
 hex = "0.4"
