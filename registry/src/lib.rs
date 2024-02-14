@@ -71,7 +71,7 @@ where
                     timestamp_ns: method
                         .id
                         .get_query_value("timestmap")?
-                        .parse::<i64>()
+                        .parse::<u64>()
                         .ok()?,
                 })
             })
@@ -82,7 +82,9 @@ where
             message: "Identities retrieved".to_string(),
             installations: installations
                 .into_iter()
-                .filter(|i| i.timestamp_ns > start_time_ns)
+                // the only way an i64 cannot fit into a u64 if it's negative, so we can safely set
+                // to 0
+                .filter(|i| i.timestamp_ns > start_time_ns.try_into().unwrap_or(0))
                 .collect(),
         })
     }

@@ -117,7 +117,7 @@ pub struct InstallationId {
     // installation id
     pub id: Bytes,
     /// Timestamp in nanoseconds of the block which the operation took place
-    pub timestamp_ns: i64,
+    pub timestamp_ns: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
