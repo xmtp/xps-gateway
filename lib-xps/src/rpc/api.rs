@@ -427,7 +427,11 @@ pub trait Xps {
     /// }
     /// ```
     #[method(name = "fetchKeyPackages")]
-    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned>;
+    async fn fetch_key_packages(
+        &self,
+        did: String,
+        start_time_ns: i64,
+    ) -> Result<KeyPackageResult, ErrorObjectOwned>;
 
     /// # Documentation for JSON RPC Endpoint: `status`
 

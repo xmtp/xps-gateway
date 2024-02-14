@@ -2141,7 +2141,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "lib-didethresolver"
 version = "0.1.0"
-source = "git+https://github.com/xmtp/didethresolver?branch=main#dd724ed9fcf18b464e57bcccfd44d8b6a7475dec"
+source = "git+https://github.com/xmtp/didethresolver?branch=insipx/xps-timestamp#6fab2a02d19ff90e1c0b3a4f039749f8e88ea28c"
 dependencies = [
  "async-trait",
  "base64 0.21.7",

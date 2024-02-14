@@ -5,10 +5,9 @@ use std::str::FromStr;
 use error::ContactOperationError;
 use ethers::types::{H160, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
-use lib_didethresolver::types::VerificationMethodProperties;
 use lib_didethresolver::Resolver;
 use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
-use xps_types::{GrantInstallationResult, KeyPackageResult, Status};
+use xps_types::{GrantInstallationResult, InstallationId, KeyPackageResult, Status};
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,
@@ -37,6 +36,7 @@ where
     pub async fn fetch_key_packages(
         &self,
         did: String,
+        start_time_ns: i64,
     ) -> Result<KeyPackageResult, ContactOperationError<M>> {
         let address = Address::from_str(&did)?;
 
@@ -52,7 +52,7 @@ where
 
         let document = resolution.document;
 
-        let properties = document
+        let installations = document
             .verification_method
             .into_iter()
             .filter(|method| {
@@ -65,16 +65,25 @@ where
                         .id
                         .contains_query("meta".into(), "installation".into())
             })
-            .filter_map(|method| method.verification_properties)
-            .collect::<Vec<VerificationMethodProperties>>();
+            .filter_map(|method| {
+                Some(InstallationId {
+                    id: method.verification_properties?.try_into().ok()?,
+                    timestamp_ns: method
+                        .id
+                        .get_query_value("timestmap")?
+                        .parse::<i64>()
+                        .ok()?,
+                })
+            })
+            .collect::<Vec<InstallationId>>();
 
         Ok(KeyPackageResult {
             status: Status::Success,
-            message: "Key packages retrieved".to_string(),
-            installation: properties
+            message: "Identities retrieved".to_string(),
+            installations: installations
                 .into_iter()
-                .map(TryFrom::try_from)
-                .collect::<Result<_, _>>()?,
+                .filter(|i| i.timestamp_ns > start_time_ns)
+                .collect(),
         })
     }
 

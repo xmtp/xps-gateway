@@ -136,11 +136,15 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         })
     }
 
-    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned> {
+    async fn fetch_key_packages(
+        &self,
+        did: String,
+        start_time_ns: i64,
+    ) -> Result<KeyPackageResult, ErrorObjectOwned> {
         log::debug!("xps_fetchKeyPackages called");
         let result = self
             .contact_operations
-            .fetch_key_packages(did)
+            .fetch_key_packages(did, start_time_ns)
             .await
             .map_err(RpcError::from)?;
         Ok(result)
