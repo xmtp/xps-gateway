@@ -70,7 +70,7 @@ where
                     id: method.verification_properties?.try_into().ok()?,
                     timestamp_ns: method
                         .id
-                        .get_query_value("timestmap")?
+                        .get_query_value("timestamp")?
                         .parse::<u64>()
                         .ok()?,
                 })

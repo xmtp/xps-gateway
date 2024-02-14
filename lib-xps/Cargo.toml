@@ -26,8 +26,12 @@ tokio-stream = { version = "0.1", features = ["net"] }
 registry = { path = "../registry" }
 messaging = { path = "../messaging" }
 
+# Integration Tests
+
 [dev-dependencies]
 jsonrpsee = { workspace = true, features = ["macros", "server", "client"] }
 tokio = { workspace = true, features = ["macros", "rt", "time"] }
 futures = "0.3"
 serde_json.workspace = true
+regex = { version = "1.10" }
+

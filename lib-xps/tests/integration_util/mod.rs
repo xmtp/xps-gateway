@@ -1,4 +1,5 @@
 use anyhow::Error;
+use hex::FromHex;
 use jsonrpsee::{
     server::Server,
     ws_client::{WsClient, WsClientBuilder},
@@ -20,6 +21,7 @@ use lib_didethresolver::{
     Resolver,
 };
 use messaging::Conversation;
+use regex::Regex;
 use std::{
     future::Future,
     sync::{Arc, Once},
@@ -27,6 +29,7 @@ use std::{
 };
 use tokio::time::timeout as timeout_tokio;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
+use xps_types::Bytes;
 
 use lib_xps::{
     types::{GatewayContext, GatewaySigner},
@@ -170,11 +173,12 @@ fn init_test_logging() {
 
 pub async fn set_attribute(
     name: [u8; 32],
-    value: Vec<u8>,
+    value: &str,
     wallet: &LocalWallet,
     registry: &DIDRegistry<GatewaySigner<Provider<Ws>>>,
 ) -> Result<(), Error> {
     let validity = U256::from(604_800);
+    let value = Bytes::from_hex(value)?;
     let signature = wallet
         .sign_attribute(registry, name, value.to_vec(), validity)
         .await?;
@@ -190,4 +194,13 @@ pub async fn set_attribute(
     );
     attr.send().await?.await?;
     Ok(())
+}
+
+pub fn did_ethr_xmtp_regex(wallet: &LocalWallet, index: usize) -> Regex {
+    let regexr = format!(
+        r"did:ethr:mainnet:0x{}\?meta=installation&timestamp=\d+#xmtp-{}",
+        hex::encode(wallet.address()),
+        index
+    );
+    Regex::new(&regexr).unwrap()
 }
