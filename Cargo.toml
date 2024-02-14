@@ -5,7 +5,7 @@ members = [
   "messaging",
   "inbox",
   "registry", 
-  "xps-types", "bin/localnet", 
+  "xps-types", "bin/localnet", "bin/xps-cli" 
 ]
 
 exclude = []
@@ -29,5 +29,6 @@ ethers = { version = "2.0.11", features = ["abigen"] }
 ctor = "0.2"
 lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = "main" }
 xps-types = { path = "./xps-types" }
+lib-xps = { path = "./lib-xps" }
 rustc-hex = "2.1"
 hex = "0.4"

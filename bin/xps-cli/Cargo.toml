@@ -1,0 +1,23 @@
+[package]
+name = "xps-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Command line tool for XPS"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log.workspace =  true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+argh = "0.1.12"
+ethers = { workspace = true, features = ["optimism"] }
+rpassword = "7.3.1"
+tokio.workspace = true
+base64 = "0.21"
+hex = "0.4.3"
+url = "2.5"
+jsonrpsee = { workspace = true, features = ["ws-client"] }
+lib-didethresolver = { workspace = true, features = ["client"], no-default-features = true }
+color-eyre = "0.6"
+xps-types.workspace = true
+lib-xps.workspace = true
