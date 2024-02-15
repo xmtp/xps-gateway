@@ -3,7 +3,7 @@ pub mod error;
 use std::str::FromStr;
 
 use error::ContactOperationError;
-use ethers::types::{H160, U256};
+use ethers::types::{Bytes, H160, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
 use lib_didethresolver::Resolver;
 use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
@@ -36,10 +36,13 @@ where
     }
 
     /// Internal function to resolve a DID to an ethereum address
-    fn resolve_did_address(&self, did: String) -> Result<H160, ContactOperationError<M>> {
+    fn resolve_did_address<S: AsRef<str>>(
+        &self,
+        did: &S,
+    ) -> Result<Address, ContactOperationError<M>> {
         // for now, we will just assume the DID is a valid ethereum wallet address
         // TODO: Parse or resolve the actual DID
-        let address = Address::from_str(&did)?;
+        let address = Address::from_slice(Bytes::from_str(did.as_ref())?.to_vec().as_slice());
         Ok(address)
     }
 
@@ -49,7 +52,7 @@ where
         did: String,
         start_time_ns: i64,
     ) -> Result<KeyPackageResult, ContactOperationError<M>> {
-        let address = Address::from_str(&did)?;
+        let address = self.resolve_did_address(&did)?;
 
         let resolution = self
             .resolver
@@ -117,6 +120,10 @@ where
         );
 
         let validated_key_package = Self::validate_key_package(kp_bytes)?;
+        log::debug!(
+            "Installation Id {:?}",
+            validated_key_package.installation_id
+        );
 
         let transaction_receipt = self
             .registry
