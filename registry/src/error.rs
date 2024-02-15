@@ -24,4 +24,6 @@ pub enum ContactOperationError<M: Middleware> {
     DIDDeactivated,
     #[error("Type failed to convert")]
     Type(#[from] lib_didethresolver::error::TypeError),
+    #[error("Error verifying key package: {0}")]
+    KeyPackage(#[from] xmtp_mls::verified_key_package::KeyPackageVerificationError),
 }

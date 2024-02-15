@@ -2,9 +2,10 @@
 
 pub mod error;
 
-use ethers::types::{Address, Bytes as EthersBytes, Signature};
-use ethers::types::{H256, U256};
-use ethers::utils::format_units;
+use ethers::{
+    types::{Address, Bytes as EthersBytes, Signature, H256, U256},
+    utils::format_units,
+};
 use std::fmt;
 
 use serde::{Deserialize, Serialize};

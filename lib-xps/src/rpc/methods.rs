@@ -64,7 +64,7 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         &self,
         did: String,
         name: XmtpAttribute,
-        value: Vec<u8>,
+        kp_bytes: Vec<u8>,
         signature: Signature,
     ) -> Result<GrantInstallationResult, ErrorObjectOwned> {
         log::debug!("xps_grantInstallation called");
@@ -74,7 +74,7 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
             .grant_installation(
                 did,
                 name,
-                value,
+                kp_bytes,
                 signature,
                 U256::from(DEFAULT_ATTRIBUTE_VALIDITY),
             )

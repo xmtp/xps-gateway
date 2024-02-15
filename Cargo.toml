@@ -31,3 +31,8 @@ lib-didethresolver = { git = "https://github.com/xmtp/didethresolver", branch = 
 xps-types = { path = "./xps-types" }
 rustc-hex = "2.1"
 hex = "0.4"
+openmls = { git = "https://github.com/xmtp/openmls", rev = "0da7dcb" }
+openmls_basic_credential = { git = "https://github.com/xmtp/openmls", rev = "0da7dcb" }
+openmls_rust_crypto = { git = "https://github.com/xmtp/openmls", rev = "0da7dcb" }
+openmls_traits = { git = "https://github.com/xmtp/openmls", rev = "0da7dcb" }
+xmtp_mls = { git = "https://github.com/xmtp/libxmtp", branch = "insipx/xps" }

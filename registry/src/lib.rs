@@ -7,11 +7,22 @@ use ethers::types::{H160, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
 use lib_didethresolver::Resolver;
 use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
+use openmls_rust_crypto::RustCrypto;
+use xmtp_mls::verified_key_package::VerifiedKeyPackage;
 use xps_types::{GrantInstallationResult, InstallationId, KeyPackageResult, Status};
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,
     resolver: Resolver<Middleware>,
+}
+
+struct ValidateKeyPackageResult {
+    installation_id: Vec<u8>,
+    account_address: String,
+    #[allow(dead_code)]
+    credential_identity_bytes: Vec<u8>,
+    #[allow(dead_code)]
+    expiration: u64,
 }
 
 impl<M> ContactOperations<M>
@@ -94,27 +105,29 @@ where
         &self,
         did: String,
         name: XmtpAttribute,
-        value: Vec<u8>,
+        kp_bytes: Vec<u8>,
         signature: Signature,
         validity: U256,
     ) -> Result<GrantInstallationResult, ContactOperationError<M>> {
-        let address = self.resolve_did_address(did)?;
+        let _address = self.resolve_did_address(did)?;
         let attribute: [u8; 32] = name.into();
         log::debug!(
             "setting attribute {:#?}",
             String::from_utf8_lossy(&attribute)
         );
 
+        let validated_key_package = Self::validate_key_package(kp_bytes)?;
+
         let transaction_receipt = self
             .registry
             .set_attribute_signed(
-                address,
+                Address::from_str(&validated_key_package.account_address)?,
                 signature.v.try_into()?,
                 signature.r.into(),
                 signature.s.into(),
                 attribute,
-                value.into(),
-                validity,
+                validated_key_package.installation_id.into(),
+                validity, // we can also possibly use the expiration on the keypackage
             )
             .send()
             .await?
@@ -133,6 +146,26 @@ where
             status: Status::Success,
             message: "Installation request complete.".to_string(),
             transaction: transaction_receipt.map(|r| r.transaction_hash),
+        })
+    }
+
+    fn validate_key_package(
+        key_package_bytes: Vec<u8>,
+    ) -> Result<ValidateKeyPackageResult, ContactOperationError<M>> {
+        let rust_crypto = RustCrypto::default();
+        let verified_key_package =
+            VerifiedKeyPackage::from_bytes(&rust_crypto, key_package_bytes.as_slice())?;
+
+        Ok(ValidateKeyPackageResult {
+            installation_id: verified_key_package.installation_id(),
+            account_address: verified_key_package.account_address,
+            credential_identity_bytes: verified_key_package
+                .inner
+                .leaf_node()
+                .credential()
+                .identity()
+                .to_vec(),
+            expiration: verified_key_package.inner.life_time().not_after(),
         })
     }
 
