@@ -24,4 +24,6 @@ pub enum ContactOperationError<M: Middleware> {
     DIDDeactivated,
     #[error("Type failed to convert")]
     Type(#[from] lib_didethresolver::error::TypeError),
+    #[error("Error parsing hex bytes: {0}")]
+    Bytes(#[from] ethers::types::ParseBytesError),
 }

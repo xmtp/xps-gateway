@@ -517,14 +517,90 @@ pub trait Xps {
     #[method(name = "status")]
     async fn status(&self) -> Result<String, ErrorObjectOwned>;
 
+    /// ### Documentation for JSON RPC Endpoint: `xps_walletAddress`
+    /// ---
+    /// #### Endpoint Name: `xps_walletAddress`
+    /// #### Description:
+    /// The `xps_walletAddress` endpoint retrieves the current Wallet Address of the internal wallet managed by the server. This endpoint is essential for applications that need to display or monitor the wallet, especially in the context of cryptocurrency transactions or account management.
+    /// #### Request:
+    /// - **Method:** `POST`
+    /// - **URL:** `/rpc/v1/walletAddress`
+    /// - **Headers:**
+    /// - `Content-Type: application/json`
+    /// - **Body:**
+    /// - **JSON Object:**
+    ///     - `jsonrpc`: `"2.0"`
+    ///     - `method`: `"xps_walletAddress"`
+    ///     - `params`: Array (optional parameters as required)
+    ///     - `id`: Request identifier (integer or string)
+    /// **Example Request Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "method": "xps_walletAddress",
+    /// "params": [],
+    /// "id": 1
+    /// }
+    /// ```
+    /// #### Response:
+    /// - **Success Status Code:** `200 OK`
+    /// - **Error Status Codes:**
+    /// - `400 Bad Request` - Invalid request format or parameters.
+    /// - `500 Internal Server Error` - Server or wallet-related error.
+    /// **Success Response Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "result": "0x0000000000000000000000000000000000000000",
+    /// "id": 1
+    /// }
+    /// ```
+    /// **Error Response Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "error": {
+    ///     "code": -32602,
+    ///     "message": "Invalid parameters"
+    /// },
+    /// "id": 1
+    /// }
+    /// ```
+    /// #### Error Handling:
+    /// - **Invalid Parameters:** Check if the request body is properly formatted and includes valid parameters.
+    /// - **Wallet or Server Errors:** Ensure that the server and wallet are operational. Consult server logs for detailed error information.
+    /// #### Security Considerations:
+    /// - **Authentication and Authorization:** Implement robust authentication and authorization checks to ensure only authorized users can access wallet balance information.
+    /// - **Secure Communication:** Utilize HTTPS to encrypt data in transit and prevent eavesdropping.
+    /// #### Usage Example:
+    /// ```javascript
+    /// const requestBody = {
+    /// jsonrpc: "2.0",
+    /// method: "xps_walletAddress",
+    /// params: [],
+    /// id: 1
+    /// };
+    /// fetch('https://server.example.com/rpc/v1/walletAddress', {
+    /// method: 'POST',
+    /// headers: {
+    ///     'Content-Type': 'application/json'
+    /// },
+    /// body: JSON.stringify(requestBody)
+    /// })
+    /// .then(response => response.json())
+    /// .then(data => console.log('Wallet Balance:', data.result))
+    /// .catch(error => console.error('Error:', error));
+    /// ```
+    /// </div>
+    /// ```
     #[method(name = "walletAddress")]
     async fn wallet_address(&self) -> Result<Address, ErrorObjectOwned>;
 
-    /// ### Documentation for JSON RPC Endpoint: `balance`
+    /// ### Documentation for JSON RPC Endpoint: `xps_balance`
     /// ---
-    /// #### Endpoint Name: `balance`
+    /// #### Endpoint Name: `xps_balance`
     /// #### Description:
-    /// The `balance` endpoint retrieves the current balance of the internal wallet managed by the server. This endpoint is essential for applications that need to display or monitor the wallet's balance, especially in the context of cryptocurrency transactions or account management.
+    /// The `xps_balance` endpoint retrieves the current balance of the internal wallet managed by the server. This endpoint is essential for applications that need to display or monitor the wallet's balance, especially in the context of cryptocurrency transactions or account management.
     /// #### Request:
     /// - **Method:** `POST`
     /// - **URL:** `/rpc/v1/balance`
@@ -533,14 +609,14 @@ pub trait Xps {
     /// - **Body:**
     /// - **JSON Object:**
     ///     - `jsonrpc`: `"2.0"`
-    ///     - `method`: `"balance"`
+    ///     - `method`: `"xps_balance"`
     ///     - `params`: Array (optional parameters as required)
     ///     - `id`: Request identifier (integer or string)
     /// **Example Request Body:**
     /// ```json
     /// {
     /// "jsonrpc": "2.0",
-    /// "method": "balance",
+    /// "method": "xps_balance",
     /// "params": [],
     /// "id": 1
     /// }
@@ -582,7 +658,7 @@ pub trait Xps {
     /// ```javascript
     /// const requestBody = {
     /// jsonrpc: "2.0",
-    /// method: "balance",
+    /// method: "xps_balance",
     /// params: [],
     /// id: 1
     /// };
@@ -601,4 +677,88 @@ pub trait Xps {
     /// ```
     #[method(name = "balance")]
     async fn balance(&self) -> Result<WalletBalance, ErrorObjectOwned>;
+
+    /// ### Documentation for JSON RPC Endpoint: `xps_nonce`
+    /// ---
+    /// #### Endpoint Name: `nonce`
+    /// #### Description:
+    /// The `xps_nonce` endpoint retrieves the nonce for `address` in the [`DIDRegistry`]. This is
+    /// needed for signing payloads for DID Registry meta transactions.
+
+    /// #### Request:
+    /// - **Method:** `POST`
+    /// - **URL:** `/rpc/v1/nonce`
+    /// - **Headers:**
+    /// - `Content-Type: application/json`
+    /// - **Body:**
+    /// - **JSON Object:**
+    ///     - `jsonrpc`: `"2.0"`
+    ///     - `method`: `"xps_nonce"`
+    ///     - `params`: Array (optional parameters as required)
+    ///     - `id`: Request identifier (integer or string)
+    /// **Example Request Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "method": "xps_nonce",
+    /// "params": ["0x0000000000000000000000000000000000000000"],
+    /// "id": 1
+    /// }
+    /// ```
+    /// #### Response:
+    /// - **Success Status Code:** `200 OK`
+    /// - **Error Status Codes:**
+    /// - `400 Bad Request` - Invalid request format or parameters.
+    /// - `500 Internal Server Error` - Server or wallet-related error.
+    /// **Success Response Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "result": {
+    ///     "nonce": 0
+    /// },
+    /// "id": 1
+    /// }
+    /// ```
+    /// **Error Response Body:**
+    /// ```json
+    /// {
+    /// "jsonrpc": "2.0",
+    /// "error": {
+    ///     "code": -32602,
+    ///     "message": "Invalid parameters"
+    /// },
+    /// "id": 1
+    /// }
+    /// ```
+    /// #### Error Handling:
+    /// - **Invalid Parameters:** Check if the request body is properly formatted and includes valid parameters.
+    /// - **Wallet or Server Errors:** Ensure that the server and wallet are operational. Consult server logs for detailed error information.
+    /// #### Security Considerations:
+    /// - **Authentication and Authorization:** Implement robust authentication and authorization checks to ensure only authorized users can access wallet balance information.
+    /// - **Secure Communication:** Utilize HTTPS to encrypt data in transit and prevent eavesdropping.
+    /// #### Usage Example:
+    /// ```javascript
+    /// const requestBody = {
+    /// jsonrpc: "2.0",
+    /// method: "xps_nonce",
+    /// params: ["0x0000000000000000000000000000000000000000"],
+    /// id: 1
+    /// };
+    /// fetch('https://server.example.com/rpc/v1/nonce', {
+    /// method: 'POST',
+    /// headers: {
+    ///     'Content-Type': 'application/json'
+    /// },
+    /// body: JSON.stringify(requestBody)
+    /// })
+    /// .then(response => response.json())
+    /// .then(data => console.log('Wallet Balance:', data.result))
+    /// .catch(error => console.error('Error:', error));
+    /// ```
+    /// </div>
+    /// ```
+
+    #[method(name = "nonce")]
+    async fn nonce(&self, did: String) -> Result<U256, ErrorObjectOwned>;
 }

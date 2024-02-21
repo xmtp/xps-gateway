@@ -1,13 +1,19 @@
 pub mod error;
+#[cfg(test)]
+mod test;
 
 use std::str::FromStr;
 
 use error::ContactOperationError;
-use ethers::types::{H160, U256};
-use ethers::{core::types::Signature, providers::Middleware, types::Address};
-use lib_didethresolver::types::VerificationMethodProperties;
-use lib_didethresolver::Resolver;
-use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
+use ethers::{
+    providers::Middleware,
+    types::{Address, Bytes, Signature, H160, U256},
+};
+use lib_didethresolver::{
+    did_registry::DIDRegistry,
+    types::{VerificationMethodProperties, XmtpAttribute},
+    Resolver,
+};
 use xps_types::{GrantInstallationResult, KeyPackageResult, Status};
 
 pub struct ContactOperations<Middleware> {
@@ -29,7 +35,8 @@ where
     fn resolve_did_address(&self, did: String) -> Result<H160, ContactOperationError<M>> {
         // for now, we will just assume the DID is a valid ethereum wallet address
         // TODO: Parse or resolve the actual DID
-        let address = Address::from_str(&did)?;
+
+        let address = Address::from_slice(Bytes::from_str(did.as_ref())?.to_vec().as_slice());
         Ok(address)
     }
 
@@ -164,5 +171,61 @@ where
         }
 
         Ok(())
+    }
+
+    pub async fn nonce(&self, did: String) -> Result<U256, ContactOperationError<M>> {
+        let address = self.resolve_did_address(did)?;
+        let nonce = self.registry.nonce(address).await?;
+        Ok(nonce)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ethers::{
+        abi::AbiEncode,
+        providers::{MockProvider, Provider},
+    };
+    use lib_didethresolver::did_registry::NonceReturn;
+
+    impl ContactOperations<Provider<MockProvider>> {
+        pub fn mocked() -> (Self, MockProvider) {
+            let (mock_provider, mock) = Provider::mocked();
+            let registry = DIDRegistry::new(H160::zero(), mock_provider.into());
+
+            (ContactOperations::new(registry), mock)
+        }
+    }
+
+    #[test]
+    fn test_resolve_address_from_hexstr() {
+        let addr = "0x0000000000000000000000000000000000000000";
+        let (ops, _) = ContactOperations::mocked();
+        assert_eq!(
+            ops.resolve_did_address(addr.to_string()).unwrap(),
+            H160::zero()
+        );
+
+        let addr = "0000000000000000000000000000000000000000";
+        assert_eq!(
+            ops.resolve_did_address(addr.to_string()).unwrap(),
+            H160::zero()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_nonce() {
+        let (ops, mock) = ContactOperations::mocked();
+
+        mock.push::<String, String>(NonceReturn(U256::from(212)).encode_hex())
+            .unwrap();
+
+        let nonce = ops
+            .nonce("0x1111111111111111111111111111111111111111".to_string())
+            .await
+            .unwrap();
+
+        assert_eq!(nonce, U256::from(212));
     }
 }
