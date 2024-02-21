@@ -3,7 +3,7 @@ pub mod error;
 use std::str::FromStr;
 
 use error::ContactOperationError;
-use ethers::types::{Bytes, H160, U256};
+use ethers::types::{Bytes, U256};
 use ethers::{core::types::Signature, providers::Middleware, types::Address};
 use lib_didethresolver::Resolver;
 use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute};
@@ -112,7 +112,7 @@ where
         signature: Signature,
         validity: U256,
     ) -> Result<GrantInstallationResult, ContactOperationError<M>> {
-        let _address = self.resolve_did_address(did)?;
+        let _address = self.resolve_did_address(&did)?;
         let attribute: [u8; 32] = name.into();
         log::debug!(
             "setting attribute {:#?}",
@@ -184,7 +184,7 @@ where
         value: Vec<u8>,
         signature: Signature,
     ) -> Result<(), ContactOperationError<M>> {
-        let address = self.resolve_did_address(did)?;
+        let address = self.resolve_did_address(&did)?;
         let attribute: [u8; 32] = name.into();
         log::debug!(
             "Revoking attribute {:#?}",
