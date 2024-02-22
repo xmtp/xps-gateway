@@ -31,3 +31,4 @@ jsonrpsee = { workspace = true, features = ["macros", "server", "client"] }
 tokio = { workspace = true, features = ["macros", "rt", "time"] }
 futures = "0.3"
 serde_json.workspace = true
+regex = { version = "1.10" }

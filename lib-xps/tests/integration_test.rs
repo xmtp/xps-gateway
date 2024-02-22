@@ -8,11 +8,12 @@ use ethers::providers::Middleware;
 use ethers::types::{Address, Bytes, TransactionRequest, U256};
 use ethers::utils::keccak256;
 use ethers::{signers::LocalWallet, signers::Signer};
+use hex::FromHex;
 use integration_util::*;
 use jsonrpsee::core::ClientError;
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
-    types::{DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
+    types::{string_to_bytes32, DidUrl, KeyEncoding, XmtpAttribute, XmtpKeyPurpose, NULL_ADDRESS},
 };
 use lib_xps::rpc::{XpsClient, DEFAULT_ATTRIBUTE_VALIDITY};
 use messaging::ConversationSignerExt;
@@ -125,7 +126,8 @@ async fn test_grant_revoke() -> Result<(), Error> {
             let wallet: LocalWallet = key.clone().into();
             let me = get_user(&anvil, key_index).await;
             let name = *b"xmtp/installation/hex           ";
-            let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
+            let value = "02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
+            let value_bytes = Bytes::from_hex(value).unwrap();
 
             let attribute = XmtpAttribute {
                 purpose: XmtpKeyPurpose::Installation,
@@ -135,7 +137,7 @@ async fn test_grant_revoke() -> Result<(), Error> {
                 .sign_attribute(
                     &context.registry,
                     name,
-                    value.to_vec(),
+                    value_bytes.to_vec().clone(),
                     U256::from(DEFAULT_ATTRIBUTE_VALIDITY),
                 )
                 .await?;
@@ -144,7 +146,7 @@ async fn test_grant_revoke() -> Result<(), Error> {
                 .grant_installation(
                     format!("0x{}", hex::encode(me.address())),
                     attribute.clone(),
-                    value.to_vec(),
+                    value_bytes.to_vec(),
                     signature,
                 )
                 .await?;
@@ -164,24 +166,19 @@ async fn test_grant_revoke() -> Result<(), Error> {
                 ))
                 .unwrap()
             );
-            assert_eq!(
-                doc.verification_method[1].id,
-                DidUrl::parse(format!(
-                    "did:ethr:0x{}?meta=installation#xmtp-0",
-                    hex::encode(me.address())
-                ))
-                .unwrap()
-            );
+
+            let test = did_ethr_xmtp_regex(me.signer(), 0);
+            assert!(test.is_match(&doc.verification_method[1].id.to_string()));
 
             let signature = wallet
-                .sign_revoke_attribute(&context.registry, name, value.to_vec())
+                .sign_revoke_attribute(&context.registry, name, value_bytes.to_vec())
                 .await?;
 
             client
                 .revoke_installation(
                     format!("0x{}", hex::encode(me.address())),
                     attribute,
-                    value.to_vec(),
+                    value_bytes.to_vec(),
                     signature,
                 )
                 .await?;
@@ -256,14 +253,9 @@ async fn test_grant_installation() -> Result<(), Error> {
             ))
             .unwrap()
         );
-        assert_eq!(
-            doc.verification_method[1].id,
-            DidUrl::parse(format!(
-                "did:ethr:0x{}?meta=installation#xmtp-0",
-                hex::encode(me.address())
-            ))
-            .unwrap()
-        );
+
+        let test = did_ethr_xmtp_regex(me.signer(), 0);
+        assert!(test.is_match(&doc.verification_method[1].id.to_string()));
 
         // now, try to grant again, and ensure it fails as expected:
         // (due to bad signature)
@@ -315,14 +307,9 @@ async fn test_grant_installation() -> Result<(), Error> {
             ))
             .unwrap()
         );
-        assert_eq!(
-            doc.verification_method[1].id,
-            DidUrl::parse(format!(
-                "did:ethr:0x{}?meta=installation#xmtp-1",
-                hex::encode(me.address())
-            ))
-            .unwrap()
-        );
+
+        let test = did_ethr_xmtp_regex(me.signer(), 1);
+        assert!(test.is_match(&doc.verification_method[1].id.to_string()));
 
         Ok(())
     })
@@ -333,27 +320,27 @@ async fn test_grant_installation() -> Result<(), Error> {
 async fn test_revoke_installation() -> Result<(), Error> {
     with_xps_client(None, None, |client, context, resolver, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
-        let name = *b"xmtp/installation/hex           ";
-        let value = b"02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
+        let name = "xmtp/installation/hex";
+        let value = "02b97c30de767f084ce3080168ee293053ba33b235d7116a3263d29f1450936b71";
+        let value_bytes = Bytes::from_hex(value).unwrap();
 
-        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+        set_attribute(name, value, &me, &context.registry).await?;
 
         let doc = resolver
             .resolve_did(me.address(), None)
             .await
             .unwrap()
             .document;
-        assert_eq!(
-            doc.verification_method[1].id,
-            DidUrl::parse(format!(
-                "did:ethr:0x{}?meta=installation#xmtp-0",
-                hex::encode(me.address())
-            ))
-            .unwrap()
-        );
+
+        let test = did_ethr_xmtp_regex(&me, 0);
+        assert!(test.is_match(&doc.verification_method[1].id.to_string()));
 
         let signature = me
-            .sign_revoke_attribute(&context.registry, name, value.to_vec())
+            .sign_revoke_attribute(
+                &context.registry,
+                string_to_bytes32(name),
+                value_bytes.to_vec(),
+            )
             .await?;
 
         let attribute = XmtpAttribute {
@@ -365,7 +352,7 @@ async fn test_revoke_installation() -> Result<(), Error> {
             .revoke_installation(
                 format!("0x{}", hex::encode(me.address())),
                 attribute,
-                value.to_vec(),
+                value_bytes.to_vec(),
                 signature,
             )
             .await?;
@@ -429,27 +416,27 @@ async fn test_balance() -> Result<(), Error> {
 async fn test_get_identity_updates() -> Result<(), Error> {
     with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
-        let name = *b"xmtp/installation/hex           ";
-        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
-        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+        let name = "xmtp/installation/hex           ";
+        let value = "000000000000000000000000000000000000000000000000000000000000000000";
+        set_attribute(name, value, &me, &context.registry).await?;
 
-        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
-        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+        let value = "111111111111111111111111111111111111111111111111111111111111111111";
+        set_attribute(name, value, &me, &context.registry).await?;
 
         let res = client
             .get_identity_updates(format!("0x{}", hex::encode(me.address())), 0)
             .await?;
 
         assert_eq!(res.status, Status::Success);
-        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(&res.message, "Identities retrieved");
+        assert_eq!(res.installations.len(), 2);
         assert_eq!(
-            res.installations,
-            vec![
-                hex::decode(b"000000000000000000000000000000000000000000000000000000000000000000")
-                    .unwrap(),
-                hex::decode(b"111111111111111111111111111111111111111111111111111111111111111111")
-                    .unwrap()
-            ]
+            res.installations[0].id,
+            Bytes::from_hex("000000000000000000000000000000000000000000000000000000000000000000")?
+        );
+        assert_eq!(
+            res.installations[1].id,
+            Bytes::from_hex("111111111111111111111111111111111111111111111111111111111111111111")?
         );
         Ok(())
     })
@@ -460,12 +447,13 @@ async fn test_get_identity_updates() -> Result<(), Error> {
 async fn test_get_identity_updates_revoke() -> Result<(), Error> {
     with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
-        let name = *b"xmtp/installation/hex           ";
-        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
-        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+        let name = "xmtp/installation/hex";
+        let value = "000000000000000000000000000000000000000000000000000000000000000000";
+        set_attribute(name, value, &me, &context.registry).await?;
 
-        let value = b"111111111111111111111111111111111111111111111111111111111111111111";
-        set_attribute(name, value.to_vec(), &me, &context.registry).await?;
+        let value = "111111111111111111111111111111111111111111111111111111111111111111";
+        let value_bytes = Bytes::from_hex(value).unwrap().to_vec();
+        set_attribute(name, value, &me, &context.registry).await?;
 
         client
             .revoke_installation(
@@ -474,8 +462,8 @@ async fn test_get_identity_updates_revoke() -> Result<(), Error> {
                     purpose: XmtpKeyPurpose::Installation,
                     encoding: KeyEncoding::Hex,
                 },
-                value.to_vec(),
-                me.sign_revoke_attribute(&context.registry, name, value.to_vec())
+                value_bytes.clone(),
+                me.sign_revoke_attribute(&context.registry, string_to_bytes32(name), value_bytes)
                     .await?,
             )
             .await?;
@@ -485,13 +473,12 @@ async fn test_get_identity_updates_revoke() -> Result<(), Error> {
             .await?;
 
         assert_eq!(res.status, Status::Success);
-        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(&res.message, "Identities retrieved");
+        assert_eq!(res.installations.len(), 1);
         assert_eq!(
-            res.installations,
-            vec![hex::decode(
-                b"000000000000000000000000000000000000000000000000000000000000000000"
-            )
-            .unwrap()]
+            res.installations[0].id,
+            Bytes::from_hex("000000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap()
         );
 
         Ok(())
@@ -507,7 +494,9 @@ async fn test_get_identity_updates_client() -> Result<(), Error> {
             purpose: XmtpKeyPurpose::Installation,
             encoding: KeyEncoding::Hex,
         };
-        let value = b"000000000000000000000000000000000000000000000000000000000000000000";
+        let value =
+            Bytes::from_hex("000000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
 
         client
             .grant_installation(
@@ -528,13 +517,11 @@ async fn test_get_identity_updates_client() -> Result<(), Error> {
             .await?;
 
         assert_eq!(res.status, Status::Success);
-        assert_eq!(&res.message, "Key packages retrieved");
+        assert_eq!(&res.message, "Identities retrieved");
         assert_eq!(
-            res.installations,
-            vec![hex::decode(
-                b"000000000000000000000000000000000000000000000000000000000000000000"
-            )
-            .unwrap()]
+            res.installations[0].id,
+            Bytes::from_hex("000000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap()
         );
 
         Ok(())

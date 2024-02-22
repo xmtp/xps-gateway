@@ -2083,6 +2083,7 @@ dependencies = [
  "log",
  "messaging",
  "rand",
+ "regex",
  "registry",
  "serde",
  "serde_json",

@@ -11,15 +11,18 @@ use ethers::{
     middleware::SignerMiddleware,
     providers::{Provider, Ws},
     signers::{LocalWallet, Signer as _},
-    types::U256,
+    types::{Bytes, U256},
     utils::AnvilInstance,
 };
 use futures::future::FutureExt;
+use hex::FromHex;
 use lib_didethresolver::{
     did_registry::{DIDRegistry, RegistrySignerExt},
+    types::string_to_bytes32,
     Resolver,
 };
 use messaging::Conversation;
+use regex::Regex;
 use std::{
     future::Future,
     sync::{Arc, Once},
@@ -169,12 +172,14 @@ fn init_test_logging() {
 }
 
 pub async fn set_attribute(
-    name: [u8; 32],
-    value: Vec<u8>,
+    name: &str,
+    value: &str,
     wallet: &LocalWallet,
     registry: &DIDRegistry<GatewaySigner<Provider<Ws>>>,
 ) -> Result<(), Error> {
     let validity = U256::from(604_800);
+    let name = string_to_bytes32(name);
+    let value = Bytes::from_hex(value)?;
     let signature = wallet
         .sign_attribute(registry, name, value.to_vec(), validity)
         .await?;
@@ -185,9 +190,19 @@ pub async fn set_attribute(
         signature.r.into(),
         signature.s.into(),
         name,
-        value.into(),
+        value,
         validity,
     );
     attr.send().await?.await?;
     Ok(())
+}
+
+/// Returns a regex that matches the DID URL for the given index and wallet address
+pub fn did_ethr_xmtp_regex(wallet: &LocalWallet, index: usize) -> Regex {
+    let regexr = format!(
+        r"did:ethr:mainnet:0x{}\?meta=installation&timestamp=\d+#xmtp-{}",
+        hex::encode(wallet.address()),
+        index
+    );
+    Regex::new(&regexr).unwrap()
 }
