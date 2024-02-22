@@ -369,6 +369,7 @@ pub trait Xps {
     /// ##### Parameters:
     ///
     /// -   `DID` (string): Unique XMTP identifier for the user requesting the installation.
+    /// -   `start_time_ns` (int): The start time in nanoseconds from which to return identity updates.
     ///
     /// ##### Example Request:
     ///
@@ -378,6 +379,7 @@ pub trait Xps {
     ///     "method": "getIdentityUpdates",
     ///     "params": {
     ///         "did": "12345"
+    ///         "start_time_ns": 0
     ///     },
     ///     "id": 1
     /// }
@@ -427,7 +429,11 @@ pub trait Xps {
     /// }
     /// ```
     #[method(name = "getIdentityUpdates")]
-    async fn get_identity_updates(&self, did: String, start_time_ns: i64) -> Result<IdentityResult, ErrorObjectOwned>;
+    async fn get_identity_updates(
+        &self,
+        did: String,
+        start_time_ns: i64,
+    ) -> Result<IdentityResult, ErrorObjectOwned>;
 
     /// # Documentation for JSON RPC Endpoint: `status`
 
