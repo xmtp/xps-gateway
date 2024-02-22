@@ -136,7 +136,11 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         })
     }
 
-    async fn get_identity_updates(&self, did: String, start_time_ns: i64) -> Result<IdentityResult, ErrorObjectOwned> {
+    async fn get_identity_updates(
+        &self,
+        did: String,
+        start_time_ns: i64,
+    ) -> Result<IdentityResult, ErrorObjectOwned> {
         log::debug!("xps_getIdentityUpdates called");
         let result = self
             .contact_operations

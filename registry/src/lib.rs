@@ -9,11 +9,7 @@ use ethers::{
     providers::Middleware,
     types::{Address, Bytes, Signature, H160, U256},
 };
-use lib_didethresolver::{
-    did_registry::DIDRegistry,
-    types::XmtpAttribute,
-    Resolver,
-};
+use lib_didethresolver::{did_registry::DIDRegistry, types::XmtpAttribute, Resolver};
 use xps_types::{GrantInstallationResult, IdentityResult, InstallationId, Status};
 
 pub struct ContactOperations<Middleware> {
@@ -44,7 +40,7 @@ where
     pub async fn get_identity_updates(
         &self,
         did: String,
-        start_time_ns: i64
+        start_time_ns: i64,
     ) -> Result<IdentityResult, ContactOperationError<M>> {
         let address = Address::from_str(&did)?;
 
@@ -85,7 +81,7 @@ where
             })
             .collect::<Vec<InstallationId>>();
 
-      Ok(IdentityResult {
+        Ok(IdentityResult {
             status: Status::Success,
             message: "Identities retrieved".to_string(),
             installations: installations

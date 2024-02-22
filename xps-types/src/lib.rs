@@ -2,9 +2,11 @@
 
 pub mod error;
 
-use ethers::types::{Address, Bytes as EthersBytes, Signature};
-use ethers::types::{H256, U256};
-use ethers::utils::format_units;
+pub use ethers::types::Bytes;
+use ethers::{
+    types::{Address, Signature, H256, U256},
+    utils::format_units,
+};
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
@@ -22,14 +24,12 @@ pub struct Message {
     #[serde(rename = "conversationId")]
     pub conversation_id: [u8; 32],
     /// message content in bytes
-    pub payload: EthersBytes,
+    pub payload: Bytes,
     // Sender's identity
     pub identity: Address,
     // Signature by sender
     pub signature: Signature,
 }
-
-pub type Bytes = Vec<u8>;
 
 /// GrantInstallationResult represents the result of a grant installation operation in the DID registry.
 ///
@@ -114,7 +114,7 @@ pub struct IdentityResult {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct InstallationId {
     // installation id
-    pub id: Bytes,
+    pub id: Vec<u8>,
     /// Timestamp in nanoseconds of the block which the operation took place
     pub timestamp_ns: u64,
 }
