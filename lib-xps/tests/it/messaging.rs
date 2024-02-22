@@ -1,14 +1,12 @@
 use anyhow::Error;
 
-use ethers::utils::keccak256;
-use ethers::types::{Bytes, U256};
-use ethers::signers::LocalWallet;
 use crate::integration_util::*;
+use ethers::signers::LocalWallet;
+use ethers::types::{Bytes, U256};
+use ethers::utils::keccak256;
 use lib_xps::rpc::XpsClient;
 use messaging::ConversationSignerExt;
 use xps_types::{Message, Status};
-
-
 
 #[tokio::test]
 async fn test_send_message() -> Result<(), Error> {
@@ -89,4 +87,3 @@ async fn test_send_message_fail() -> Result<(), Error> {
     })
     .await
 }
-
