@@ -1,5 +1,3 @@
-mod integration_util;
-
 use std::str::FromStr;
 
 use anyhow::Error;
@@ -8,7 +6,7 @@ use ethers::providers::Middleware;
 use ethers::types::{Address, Bytes, TransactionRequest, U256};
 use ethers::utils::keccak256;
 use ethers::{signers::LocalWallet, signers::Signer};
-use integration_util::*;
+use crate::integration_util::*;
 use jsonrpsee::core::ClientError;
 use lib_didethresolver::{
     did_registry::RegistrySignerExt,
