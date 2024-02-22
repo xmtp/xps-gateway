@@ -2969,6 +2969,7 @@ name = "registry"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "ctor",
  "ethers",
  "lib-didethresolver",
  "log",
@@ -2976,6 +2977,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
+ "tracing-subscriber",
  "xps-types",
 ]
 

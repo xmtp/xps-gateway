@@ -580,3 +580,16 @@ async fn test_did_deactivation() -> Result<(), Error> {
     })
     .await
 }
+
+#[tokio::test]
+async fn test_nonce() -> Result<(), Error> {
+    with_xps_client(None, None, |client, _, _, anvil| async move {
+        let me: LocalWallet = anvil.keys()[3].clone().into();
+
+        let nonce = client.nonce(hex::encode(me.address())).await?;
+        assert_eq!(U256::from(0), nonce);
+
+        Ok(())
+    })
+    .await
+}
