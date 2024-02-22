@@ -7,7 +7,7 @@ use ethers::{
     abi::Address,
     providers::{Provider, Ws},
 };
-use jsonrpsee::server::Server;
+use jsonrpsee::{server::Server, RpcModule};
 use std::str::FromStr;
 use xps_types::{CONVERSATION, DID_ETH_REGISTRY};
 
@@ -29,10 +29,33 @@ pub async fn run<P: AsRef<str>>(host: String, port: u16, provider: P) -> Result<
     let provider = Provider::<Ws>::connect(provider.as_ref()).await.unwrap();
 
     let context = GatewayContext::new(registry_contract, conversation_contract, provider).await?;
-    let xps_methods = rpc::XpsMethods::new(&context);
-    let handle = server.start(xps_methods.into_rpc());
+    let mut methods = RpcModule::new(());
+    methods.merge(rpc::XpsMethods::new(&context).into_rpc())?;
+    let methods = build_rpc_api(methods);
+
+    let handle = server.start(methods);
 
     log::info!("Server Started at {addr}");
     handle.stopped().await;
     Ok(())
 }
+
+// create an endpoint that lists all the methods available on the server, at the
+// endpoint `/rpc_methods`
+fn build_rpc_api<M: Send + Sync + 'static>(mut rpc_api: RpcModule<M>) -> RpcModule<M> {
+    let mut available_methods = rpc_api.method_names().collect::<Vec<_>>();
+    // The "rpc_methods" is defined below and we want it to be part of the reported methods.
+    available_methods.push("rpc_methods");
+    available_methods.sort();
+
+    rpc_api
+        .register_method("rpc_methods", move |_, _| {
+            serde_json::json!({
+                "methods": available_methods,
+            })
+        })
+        .expect("infallible all other methods have their own address space; qed");
+
+    rpc_api
+}
+
