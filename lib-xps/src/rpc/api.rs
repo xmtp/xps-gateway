@@ -551,7 +551,7 @@ pub trait Xps {
     /// ```json
     /// {
     /// "jsonrpc": "2.0",
-    /// "result": "0x0000000000000000000000000000000000000000",
+    /// "result": "0xce90a7949bb78892f159f428d0dc23a8e3584d75",
     /// "id": 1
     /// }
     /// ```
@@ -701,7 +701,7 @@ pub trait Xps {
     /// {
     /// "jsonrpc": "2.0",
     /// "method": "xps_nonce",
-    /// "params": ["0x0000000000000000000000000000000000000000"],
+    /// "params": ["0xce90a7949bb78892f159f428d0dc23a8e3584d75"],
     /// "id": 1
     /// }
     /// ```
@@ -742,7 +742,7 @@ pub trait Xps {
     /// const requestBody = {
     /// jsonrpc: "2.0",
     /// method: "xps_nonce",
-    /// params: ["0x0000000000000000000000000000000000000000"],
+    /// params: ["0xce90a7949bb78892f159f428d0dc23a8e3584d75"],
     /// id: 1
     /// };
     /// fetch('https://server.example.com/rpc/v1/nonce', {
