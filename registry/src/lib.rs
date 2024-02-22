@@ -173,6 +173,7 @@ where
         Ok(())
     }
 
+    /// get the nonce for a given address from [`DIDRegistry`]
     pub async fn nonce(&self, did: String) -> Result<U256, ContactOperationError<M>> {
         let address = self.resolve_did_address(did)?;
         let nonce = self.registry.nonce(address).await?;
