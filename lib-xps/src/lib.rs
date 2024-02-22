@@ -54,8 +54,7 @@ fn build_rpc_api<M: Send + Sync + 'static>(mut rpc_api: RpcModule<M>) -> RpcModu
                 "methods": available_methods,
             })
         })
-        .expect("infallible all other methods have their own address space; qed");
+        .expect("infallible, all other methods have their own address space");
 
     rpc_api
 }
-
