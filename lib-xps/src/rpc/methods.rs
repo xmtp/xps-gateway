@@ -145,6 +145,16 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
             .map_err(RpcError::from)?;
         Ok(result)
     }
+
+    async fn nonce(&self, did: String) -> Result<U256, ErrorObjectOwned> {
+        log::debug!("xps_nonce called");
+        let result = self
+            .contact_operations
+            .nonce(did)
+            .await
+            .map_err(RpcError::from)?;
+        Ok(result)
+    }
 }
 
 /// Error types for DID Registry JSON-RPC
