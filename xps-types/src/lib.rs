@@ -101,13 +101,22 @@ pub struct SendMessageResult {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct KeyPackageResult {
+pub struct IdentityResult {
     /// Status of the operation
     pub status: Status,
     /// A message relating to the operation
     pub message: String,
     /// A list of key packages
-    pub installation: Vec<Bytes>,
+    pub installations: Vec<InstallationId>,
+}
+
+/// A single InstallationID
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct InstallationId {
+    // installation id
+    pub id: Bytes,
+    /// Timestamp in nanoseconds of the block which the operation took place
+    pub timestamp_ns: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

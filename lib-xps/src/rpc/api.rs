@@ -6,7 +6,7 @@ use jsonrpsee::{proc_macros::rpc, types::ErrorObjectOwned};
 
 use lib_didethresolver::types::XmtpAttribute;
 use xps_types::{
-    GrantInstallationResult, KeyPackageResult, Message, SendMessageResult, WalletBalance,
+    GrantInstallationResult, IdentityResult, Message, SendMessageResult, WalletBalance,
 };
 
 /// XPS JSON-RPC Interface Methods
@@ -346,21 +346,21 @@ pub trait Xps {
     /// #### Request:
     ///
     /// - **Method:** `POST`
-    /// - **URL:** `/rpc/v1/fetchKeyPackages`
+    /// - **URL:** `/rpc/v1/getIdentityUpdates`
     /// - **Headers:**
     ///   - `Content-Type: application/json`
     /// - **Body:**
     ///   - **JSON Object:**
     ///     - `jsonrpc`: `"2.0"`
-    ///     - `method`: `"fetchKeyPackages"`
+    ///     - `method`: `"getIdentityUpdates"`
     ///     - `params`: Array (optional parameters as required)
     ///     - `id`: Request identifier (integer or string)
     ///
-    /// ### Endpoint: `fetchKeyPackages`
+    /// ### Endpoint: `getIdentityUpdates`
     ///
     /// #### Description
     ///
-    /// The `fetchKeyPackages` endpoint is responsible for retrieving the contact bundle for the XMTP device installations. The request must be made to a valid did with an XMTP profile.
+    /// The `getIdentityUpdates` endpoint is responsible for retrieving the contact bundle for the XMTP device installations. The request must be made to a valid did with an XMTP profile.
     ///
     /// #### Request
     ///
@@ -375,7 +375,7 @@ pub trait Xps {
     /// ```json
     /// {
     ///     "jsonrpc": "2.0",
-    ///     "method": "fetchKeyPackages",
+    ///     "method": "getIdentityUpdates",
     ///     "params": {
     ///         "did": "12345"
     ///     },
@@ -426,8 +426,8 @@ pub trait Xps {
     ///     "id": 1
     /// }
     /// ```
-    #[method(name = "fetchKeyPackages")]
-    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned>;
+    #[method(name = "getIdentityUpdates")]
+    async fn get_identity_updates(&self, did: String, start_time_ns: i64) -> Result<IdentityResult, ErrorObjectOwned>;
 
     /// # Documentation for JSON RPC Endpoint: `status`
 

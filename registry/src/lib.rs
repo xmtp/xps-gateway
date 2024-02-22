@@ -11,10 +11,10 @@ use ethers::{
 };
 use lib_didethresolver::{
     did_registry::DIDRegistry,
-    types::{VerificationMethodProperties, XmtpAttribute},
+    types::XmtpAttribute,
     Resolver,
 };
-use xps_types::{GrantInstallationResult, KeyPackageResult, Status};
+use xps_types::{GrantInstallationResult, IdentityResult, InstallationId, Status};
 
 pub struct ContactOperations<Middleware> {
     registry: DIDRegistry<Middleware>,
@@ -41,10 +41,11 @@ where
     }
 
     /// Fetches key packages for a given DID using [`Resolver::resolve_did`]
-    pub async fn fetch_key_packages(
+    pub async fn get_identity_updates(
         &self,
         did: String,
-    ) -> Result<KeyPackageResult, ContactOperationError<M>> {
+        start_time_ns: i64
+    ) -> Result<IdentityResult, ContactOperationError<M>> {
         let address = Address::from_str(&did)?;
 
         let resolution = self
@@ -59,7 +60,7 @@ where
 
         let document = resolution.document;
 
-        let properties = document
+        let installations = document
             .verification_method
             .into_iter()
             .filter(|method| {
@@ -72,16 +73,27 @@ where
                         .id
                         .contains_query("meta".into(), "installation".into())
             })
-            .filter_map(|method| method.verification_properties)
-            .collect::<Vec<VerificationMethodProperties>>();
+            .filter_map(|method| {
+                Some(InstallationId {
+                    id: method.verification_properties?.try_into().ok()?,
+                    timestamp_ns: method
+                        .id
+                        .get_query_value("timestamp")?
+                        .parse::<u64>()
+                        .ok()?,
+                })
+            })
+            .collect::<Vec<InstallationId>>();
 
-        Ok(KeyPackageResult {
+      Ok(IdentityResult {
             status: Status::Success,
-            message: "Key packages retrieved".to_string(),
-            installation: properties
+            message: "Identities retrieved".to_string(),
+            installations: installations
                 .into_iter()
-                .map(TryFrom::try_from)
-                .collect::<Result<_, _>>()?,
+                // the only way an i64 cannot fit into a u64 if it's negative, so we can safely set
+                // to 0
+                .filter(|i| i.timestamp_ns > start_time_ns.try_into().unwrap_or(0))
+                .collect(),
         })
     }
 

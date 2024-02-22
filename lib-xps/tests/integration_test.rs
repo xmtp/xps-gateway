@@ -426,7 +426,7 @@ async fn test_balance() -> Result<(), Error> {
 }
 
 #[tokio::test]
-async fn test_fetch_key_packages() -> Result<(), Error> {
+async fn test_get_identity_updates() -> Result<(), Error> {
     with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
@@ -437,13 +437,13 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
         set_attribute(name, value.to_vec(), &me, &context.registry).await?;
 
         let res = client
-            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .get_identity_updates(format!("0x{}", hex::encode(me.address())), 0)
             .await?;
 
         assert_eq!(res.status, Status::Success);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
-            res.installation,
+            res.installations,
             vec![
                 hex::decode(b"000000000000000000000000000000000000000000000000000000000000000000")
                     .unwrap(),
@@ -457,7 +457,7 @@ async fn test_fetch_key_packages() -> Result<(), Error> {
 }
 
 #[tokio::test]
-async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
+async fn test_get_identity_updates_revoke() -> Result<(), Error> {
     with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let name = *b"xmtp/installation/hex           ";
@@ -481,13 +481,13 @@ async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
             .await?;
 
         let res = client
-            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .get_identity_updates(format!("0x{}", hex::encode(me.address())), 0)
             .await?;
 
         assert_eq!(res.status, Status::Success);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
-            res.installation,
+            res.installations,
             vec![hex::decode(
                 b"000000000000000000000000000000000000000000000000000000000000000000"
             )
@@ -500,7 +500,7 @@ async fn test_fetch_key_packages_revoke() -> Result<(), Error> {
 }
 
 #[tokio::test]
-async fn test_fetch_key_packages_client() -> Result<(), Error> {
+async fn test_get_identity_updates_client() -> Result<(), Error> {
     with_xps_client(None, None, |client, context, _, anvil| async move {
         let me: LocalWallet = anvil.keys()[3].clone().into();
         let attribute = XmtpAttribute {
@@ -524,13 +524,13 @@ async fn test_fetch_key_packages_client() -> Result<(), Error> {
             )
             .await?;
         let res = client
-            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .get_identity_updates(format!("0x{}", hex::encode(me.address())), 0)
             .await?;
 
         assert_eq!(res.status, Status::Success);
         assert_eq!(&res.message, "Key packages retrieved");
         assert_eq!(
-            res.installation,
+            res.installations,
             vec![hex::decode(
                 b"000000000000000000000000000000000000000000000000000000000000000000"
             )
@@ -563,7 +563,7 @@ async fn test_did_deactivation() -> Result<(), Error> {
             .await?;
 
         let res = client
-            .fetch_key_packages(format!("0x{}", hex::encode(me.address())))
+            .get_identity_updates(format!("0x{}", hex::encode(me.address())), 0)
             .await
             .unwrap_err();
 

@@ -16,7 +16,7 @@ use messaging::MessagingOperations;
 use std::sync::Arc;
 use thiserror::Error;
 use xps_types::{
-    GrantInstallationResult, KeyPackageResult, Message, SendMessageResult, Unit, WalletBalance,
+    GrantInstallationResult, IdentityResult, Message, SendMessageResult, Unit, WalletBalance,
 };
 
 use messaging::error::MessagingOperationError;
@@ -136,11 +136,11 @@ impl<P: Middleware + 'static> XpsServer for XpsMethods<P> {
         })
     }
 
-    async fn fetch_key_packages(&self, did: String) -> Result<KeyPackageResult, ErrorObjectOwned> {
-        log::debug!("xps_fetchKeyPackages called");
+    async fn get_identity_updates(&self, did: String, start_time_ns: i64) -> Result<IdentityResult, ErrorObjectOwned> {
+        log::debug!("xps_getIdentityUpdates called");
         let result = self
             .contact_operations
-            .fetch_key_packages(did)
+            .get_identity_updates(did, start_time_ns)
             .await
             .map_err(RpcError::from)?;
         Ok(result)
