@@ -1,6 +1,10 @@
 use anyhow::Result;
 use clap::Parser;
+use ethers::providers::{Provider, Ws};
 use lib_xps::run;
+use tracing_subscriber::{
+    filter::LevelFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry,
+};
 
 #[derive(Parser, Debug)]
 #[command(name = "xps", version = "0.1.0", about = "XMTP Postal Service")]
@@ -19,9 +23,19 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    init_logging();
     let args = Args::parse();
-    crate::run(args.host, args.port, args.endpoint).await?;
+    let provider = Provider::<Ws>::connect(&args.endpoint).await?;
+    crate::run(args.host, args.port, provider).await?;
     Ok(())
+}
+
+fn init_logging() {
+    let fmt = fmt::layer().compact();
+    let env = EnvFilter::builder()
+        .with_default_directive(LevelFilter::INFO.into())
+        .from_env_lossy();
+    Registry::default().with(env).with(fmt).init()
 }
 
 #[cfg(test)]
