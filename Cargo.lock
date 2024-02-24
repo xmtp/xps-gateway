@@ -4575,8 +4575,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "ethers",
  "lib-xps",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
